@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="SmartMetroService.Api/SmartMetroService.Api.csproj" />
+  <Project Path="SmartMetroService.Application/SmartMetroService.Application.csproj" />
+  <Project Path="SmartMetroService.Domain/SmartMetroService.Domain.csproj" />
+  <Project Path="SmartMetroService.Storage/SmartMetroService.Storage.csproj" />
+</Solution>
