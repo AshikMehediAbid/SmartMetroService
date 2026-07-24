@@ -7,11 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\IManagers\" />
-    <Folder Include="Interfaces\IRepositories\" />
-    <Folder Include="Managers\" />
     <Folder Include="Mapping\" />
-    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartMetroService.Domain\SmartMetroService.Domain.csproj" />
   </ItemGroup>
 
 </Project>
