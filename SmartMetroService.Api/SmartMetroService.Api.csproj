@@ -4,18 +4,22 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>15bd5131-3a2b-442d-ad2e-50f66cae30ea</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configurations\" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.11.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SmartMetroService.Application\SmartMetroService.Application.csproj" />
+    <ProjectReference Include="..\SmartMetroService.Storage\SmartMetroService.Storage.csproj" />
   </ItemGroup>
 
 </Project>

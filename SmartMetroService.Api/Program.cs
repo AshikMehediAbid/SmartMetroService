@@ -1,4 +1,8 @@
+using SmartMetroService.Api.Configurations;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDependencies(builder.Configuration);
 
 // Add services to the container.
 

@@ -26,13 +26,51 @@ public class AccountController : ControllerBase
 
             return (Ok(new
             {
-                UserName = user.FullName,
+                UserName = user.Name,
                 Message = "Your Account has been created. Login and verify Your Email"
             }));
         }
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
+        }
+    }
+
+
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> LoginUser(LoginUserDto user)
+    {
+        try
+        {
+            var loggedInUser = await _accountService.LoginUserAsync(user);
+
+            return Ok(loggedInUser);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+
+    [HttpGet]
+    [Route("verifyemail")]
+    public async Task<IActionResult> VerifyEmail([FromQuery]string email,[FromQuery] string otp)
+    {
+        try
+        {
+            var verifyEmail = await _accountService.VerifyEmailAsync(email , otp);
+
+            if (verifyEmail)
+                return Ok("Your Email is verified.");
+
+            else
+                return BadRequest("OTP is expired Or Something went wrong. Try again");
+        }
+        catch
+        {
+            return BadRequest("Something went wrong");
         }
     }
 }

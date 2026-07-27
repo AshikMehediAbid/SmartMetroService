@@ -5,7 +5,8 @@ namespace SmartMetroService.Storage.Sql;
 
 public class MyApplicationDbContext : DbContext
 {
-    public MyApplicationDbContext(DbContextOptions<MyApplicationDbContext> options) : base() { }
+    public MyApplicationDbContext(DbContextOptions<MyApplicationDbContext> options) : base(options) { }
 
     public DbSet<User> Users { get; set; }
+    public DbSet<UserOTP> UserTokens { get; set; }
 }

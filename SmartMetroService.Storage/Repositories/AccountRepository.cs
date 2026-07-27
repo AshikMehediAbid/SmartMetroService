@@ -12,6 +12,20 @@ public class AccountRepository : Repository<User>, IAccountRepository
 
     }
 
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        var user = await _dbSet.FirstOrDefaultAsync(x => x.Email == email);
+
+        return user;
+    }
+
+    public async Task<User?> GetUserByPhoneNumberAsync(string phoneNumber)
+    {
+        var user = await _dbSet.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
+
+        return user;
+    }
+
     public async Task<(bool,string?)> UserAlreadyExistsAsync(string email, string phoneNumber)
     {
         var isEmailExist = await _dbSet.AnyAsync(u => u.Email == email);

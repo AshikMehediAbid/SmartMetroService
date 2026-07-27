@@ -8,13 +8,16 @@ public class UnitOfWork : IUnitOfWork
     private readonly MyApplicationDbContext _db;
 
     public IAccountRepository AccountRepository { get; }
+    public IUserOTPRepository UserTokenRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
-        IAccountRepository accountRepo)
+        IAccountRepository accountRepo,
+        IUserOTPRepository userTokenRepository)
     {
         _db = db;
 
         AccountRepository = accountRepo;
+        UserTokenRepository = userTokenRepository;
     }
 
     public async Task<int> CompleteAsync()
