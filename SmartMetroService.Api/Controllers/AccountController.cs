@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Models;
@@ -72,5 +73,18 @@ public class AccountController : ControllerBase
         {
             return BadRequest("Something went wrong");
         }
+    }
+
+    [HttpPost]
+    [Route("change-password")]
+    [Authorize]
+    public IActionResult ChangePassword([FromBody]ChangePasswordDto changePassword)
+    {
+        // TODO
+        return Ok(User.Claims.Select(c => new
+        {
+            c.Type,
+            c.Value
+        }));
     }
 }
