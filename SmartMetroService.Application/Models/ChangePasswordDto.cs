@@ -1,7 +1,13 @@
-﻿namespace SmartMetroService.Application.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SmartMetroService.Application.Models;
 
 public class ChangePasswordDto
 {
-    public required string CurrentPassword { get; set; }
-    public required string NewPassword { get; set; }
+    [Required]
+    public string CurrentPassword { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(6)]
+    public string NewPassword { get; set; } = string.Empty;
 }

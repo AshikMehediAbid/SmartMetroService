@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SmartMetroService.Api.Models;
+using SmartMetroService.Application.Exceptions;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Models;
 
@@ -19,66 +20,121 @@ public class AccountController : ControllerBase
 
     [HttpPost]
     [Route("register")]
-    public async Task<IActionResult> RegisterUser([FromBody] RegisterUserDto user)
+    public async Task<ActionResult<ApiResponse<object>>> RegisterUser([FromBody] RegisterUserDto user)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = "One or more fields are invalid."
+            });
+        }
+
         try
         {
-            var userRegister = await _accountService.RegisterNewUserAsync(user);
+            await _accountService.RegisterNewUserAsync(user);
 
-            return (Ok(new
+            return Ok(new ApiResponse<object>()
             {
-                UserName = user.Name,
-                Message = "Your Account has been created. Login and verify Your Email"
-            }));
+                Message = "Your account has been created. Please login and verify your email."
+            });
+        }
+        catch (ApiException ex)
+        {
+            return StatusCode(ex.StatusCode, new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return StatusCode(500, new ApiResponse<object>()
+            {
+                Message = $"An unexpected error occurred. ex.Message"
+            });
         }
     }
 
 
     [HttpPost]
     [Route("login")]
-    public async Task<IActionResult> LoginUser(LoginUserDto user)
+    public async Task<ActionResult<ApiResponse<object>>> LoginUser([FromBody] LoginUserDto user)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = "One or more fields are invalid."
+            });
+        }
+
         try
         {
             var loggedInUser = await _accountService.LoginUserAsync(user);
 
-            return Ok(loggedInUser);
+            return Ok(new ApiResponse<object>()
+            {
+                Message = $"{loggedInUser}, Login successful"
+            });
+        }
+        catch (ApiException ex)
+        {
+            return StatusCode(ex.StatusCode, new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return StatusCode(500, new ApiResponse<object>()
+            {
+                Message = $"An unexpected error occurred. {ex.Message}"
+            });
         }
     }
 
 
     [HttpGet]
     [Route("verifyemail")]
-    public async Task<IActionResult> VerifyEmail([FromQuery]string email,[FromQuery] string otp)
+    public async Task<ActionResult<ApiResponse<object>>> VerifyEmail([FromQuery] string email, [FromQuery] string otp)
     {
         try
         {
-            var verifyEmail = await _accountService.VerifyEmailAsync(email , otp);
+            var verifyEmail = await _accountService.VerifyEmailAsync(email, otp);
 
             if (verifyEmail)
-                return Ok("Your Email is verified.");
+            {
+                return Ok(new ApiResponse<object>()
+                {
+                    Message = $"{email}, Your email is verified."
+                });
+            }
 
-            else
-                return BadRequest("OTP is expired Or Something went wrong. Try again");
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = "OTP is expired or something went wrong. Please try again."
+            });
         }
-        catch
+        catch (ApiException ex)
         {
-            return BadRequest("Something went wrong");
+            return StatusCode(ex.StatusCode, new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ApiResponse<object>()
+            {
+                Message = $"An unexpected error occurred,{ex.Message}"
+            });
         }
     }
 
     [HttpPost]
     [Route("change-password")]
     [Authorize]
-    public IActionResult ChangePassword([FromBody]ChangePasswordDto changePassword)
+    public IActionResult ChangePassword([FromBody] ChangePasswordDto changePassword)
     {
         // TODO
         return Ok(User.Claims.Select(c => new

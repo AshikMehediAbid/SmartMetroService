@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SmartMetroService.Application.Exceptions;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Interfaces.IRepositories;
 using SmartMetroService.Application.Models;
@@ -81,15 +82,14 @@ public class AccountService : IAccountService
     {
         if (user == null)
         {
-            throw new Exception("Invalid Phone number");
+            throw new ValidationException("Invalid phone number.");
         }
-
 
         var result = BCrypt.Net.BCrypt.Verify(loginInfo.PassWord, user.HashedPassword);
 
         if (!result)
         {
-            throw new Exception("Invalid Password");
+            throw new UnauthorizedException("Invalid password.");
         }
     }
 
@@ -98,7 +98,7 @@ public class AccountService : IAccountService
         var (isExist, registeredData) = await _uOW.AccountRepository.UserAlreadyExistsAsync(user.Email, user.PhoneNumber);
 
         if (isExist)
-            throw new Exception($"{registeredData} is already registered");
+            throw new AlreadyExistsException($"{registeredData} is already registered.");
 
         try
         {
@@ -154,9 +154,9 @@ public class AccountService : IAccountService
     {
         User? user = await _uOW.AccountRepository.GetUserByEmailAsync(email);
 
-        if(user is null)
+        if (user is null)
         {
-            throw new Exception("User not found");
+            throw new NotFoundException("User not found.");
         }
 
         if (user.IsEmailVerified)
@@ -167,7 +167,9 @@ public class AccountService : IAccountService
         var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EmailVerification);
 
         if (!validateOtp)
-            return false;
+        {
+            throw new OtpException("The provided OTP is invalid or expired.");
+        }
 
         user.IsEmailVerified = true;
 

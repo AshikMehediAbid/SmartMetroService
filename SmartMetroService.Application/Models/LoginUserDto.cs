@@ -1,8 +1,16 @@
-﻿namespace SmartMetroService.Application.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SmartMetroService.Application.Models;
 
 public class LoginUserDto
 {
-    public string PhoneNumber { get; set; }
-    public string PassWord { get; set; }
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    [Required]
+    [MinLength(6)]
+    public string PassWord { get; set; } = string.Empty;
+
     public bool RememberMe { get; set; }
 }
