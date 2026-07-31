@@ -9,6 +9,7 @@ using SmartMetroService.Domain.Entities;
 using SmartMetroService.Domain.Enums;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SmartMetroService.Application.Managers;
@@ -50,14 +51,23 @@ public class AccountService : IAccountService
 
             return new LoginResponse
             {
-                token = jwtToken,
-                isSent = isSent
+                tokens = new TokenDto()
+                {
+                    AccessToken = jwtToken,
+                    RefreshToken = await CreateNewRefreshTokenAsync(user.Id)
+                },
+                isSent = isSent,
+
             };
         }
 
         return new LoginResponse
         {
-            token = jwtToken,
+            tokens = new TokenDto()
+            {
+                AccessToken = jwtToken,
+                RefreshToken = await CreateNewRefreshTokenAsync(user.Id)
+            },
             isVerified = true
         };
     }
@@ -176,5 +186,66 @@ public class AccountService : IAccountService
         await _uOW.CompleteAsync();
 
         return true;
+    }
+
+    public async Task<TokenDto?> GenerateTokensAsync(string? refreshToken)
+    {
+        if (refreshToken != null)
+        {
+        }
+        var token = await _uOW.TokenRepository.GetTokenAsync( ComputeSha256(refreshToken));
+
+        if (token is null || token.ExpiredAt < DateTime.UtcNow)
+        {
+            throw new UnauthorizedException("Unauthorize Access. Need to login again");
+        }
+
+        else if (token.RevokedAt != null)
+        {
+            await _uOW.TokenRepository.RevokeAllActiveTokensAsync(token.UserId);
+            await _uOW.CompleteAsync();
+            throw new UnauthorizedException("Unauthorize Access. Need to login again");
+        }
+
+        string newRefToken = await CreateNewRefreshTokenAsync(token.UserId);
+
+        //Revoke old refresh token
+        token.RevokedAt = DateTime.UtcNow;
+
+        await _uOW.CompleteAsync();
+
+        var user = await _uOW.AccountRepository.GetByIdAsync(token.UserId);
+
+        var tokens = new TokenDto()
+        {
+            AccessToken = GenerateJwtToken(user.Id, user.Name, user.PhoneNumber, user.UserRole),
+            RefreshToken = newRefToken,
+        };
+
+        return tokens;
+    }
+
+    private async Task<string> CreateNewRefreshTokenAsync(Guid userId)
+    {
+        var newRefToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        var newTokenEntity = new Token()
+        {
+            UserId = userId,
+            TokenHash = ComputeSha256(newRefToken),
+        };
+
+        await _uOW.TokenRepository.AddAsync(newTokenEntity);
+        await _uOW.CompleteAsync();
+        return newRefToken;
+    }
+
+    private static string ComputeSha256(string value)
+    {
+        using var sha = SHA256.Create();
+
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
+
+        return Convert.ToHexString(bytes);
     }
 }

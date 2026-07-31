@@ -9,4 +9,5 @@ public class MyApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<UserOTP> UserTokens { get; set; }
+    public DbSet<Token> Tokens { get; set; }
 }
