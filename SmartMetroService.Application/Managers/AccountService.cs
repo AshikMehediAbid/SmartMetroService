@@ -47,7 +47,7 @@ public class AccountService : IAccountService
 
         if (!user.IsEmailVerified)
         {
-            var isSent = await SendEmailVerificetionOtp(user.Email, user.Name);
+            var isSent = await SendEmailVerificationOtp(user.Email, user.Name);
 
             return new LoginResponse
             {
@@ -73,15 +73,15 @@ public class AccountService : IAccountService
     }
 
 
-    private async Task<bool> SendEmailVerificetionOtp(string email, string name)
+    private async Task<bool> SendEmailVerificationOtp(string email, string name)
     {
         var otp = await _otpService.GenerateEmailVerificationOtp(email);
 
         var isSent = await _emailService.
             SendEmailAsync(
                 email: email,
-                subject: "Your email verification OTP",
-                message: $"Your Smart Metro Service account verification OTP is {otp}. " +
+                subject: "Smart Metro Service - Email Verification OTP",
+                message: $"Dear {name}, Your Smart Metro Service account verification OTP is - {otp}. " +
                 $"It will be valid for the next 10 minutes. Do NOT share this OTP with anyone."
             );
 
@@ -188,11 +188,8 @@ public class AccountService : IAccountService
         return true;
     }
 
-    public async Task<TokenDto?> GenerateTokensAsync(string? refreshToken)
+    public async Task<TokenDto?> GenerateTokensAsync(string refreshToken)
     {
-        if (refreshToken != null)
-        {
-        }
         var token = await _uOW.TokenRepository.GetTokenAsync( ComputeSha256(refreshToken));
 
         if (token is null || token.ExpiredAt < DateTime.UtcNow)
