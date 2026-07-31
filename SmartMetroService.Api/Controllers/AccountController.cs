@@ -74,7 +74,8 @@ public class AccountController : ControllerBase
 
             return Ok(new ApiResponse<object>()
             {
-                Message = $"{loggedInUser}, Login successful"
+                Data = loggedInUser,
+                Message = $"Login successful"
             });
         }
         catch (ApiException ex)
@@ -143,4 +144,31 @@ public class AccountController : ControllerBase
             c.Value
         }));
     }
+
+    [HttpPost]
+    [Route("token")]
+    public async Task<IActionResult> GetTokens([FromBody] string refreshToken)
+    {
+        try
+        {
+            TokenDto? tokens = await _accountService.GenerateTokensAsync(refreshToken);
+
+            return Ok(tokens);
+        }
+        catch(UnauthorizedException ex)
+        {
+            return Unauthorized(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+    }
+
 }

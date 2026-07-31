@@ -21,6 +21,7 @@ public static class DependencyConfig
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IUserOTPRepository, UserOTPRepository>();
+        services.AddScoped<ITokenRepository, TokenRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

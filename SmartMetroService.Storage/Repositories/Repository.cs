@@ -37,9 +37,11 @@ public class Repository<T> : IRepository<T> where T : class
         throw new NotImplementedException();
     }
 
-    public Task<T> GetByIdAsync(Guid id)
+    public async Task<T?> GetByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var entity = await _dbSet.FindAsync(id);
+
+        return entity;
     }
 
     public Task<T> UpdateAsync(T entity)
