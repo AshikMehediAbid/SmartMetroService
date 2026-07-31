@@ -9,15 +9,21 @@ public class UnitOfWork : IUnitOfWork
 
     public IAccountRepository AccountRepository { get; }
     public IUserOTPRepository UserTokenRepository { get; }
+    public IStationRepository StationRepository { get; }
+    public IStationDistanceRepository StationDistanceRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
         IAccountRepository accountRepo,
-        IUserOTPRepository userTokenRepository)
+        IUserOTPRepository userTokenRepository,
+        IStationRepository stationRepository,
+        IStationDistanceRepository stationDistanceRepository)
     {
         _db = db;
 
         AccountRepository = accountRepo;
         UserTokenRepository = userTokenRepository;
+        StationRepository = stationRepository;
+        StationDistanceRepository = stationDistanceRepository;
     }
 
     public async Task<int> CompleteAsync()
