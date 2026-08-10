@@ -4,6 +4,8 @@ using SmartMetroService.Api.Models;
 using SmartMetroService.Application.Exceptions;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace SmartMetroService.Api.Controllers;
 
@@ -11,11 +13,14 @@ namespace SmartMetroService.Api.Controllers;
 [ApiController]
 public class AccountController : ControllerBase
 {
+    private const string RefreshTokenCookieName = "refreshToken";
     private readonly IAccountService _accountService;
+    private readonly IProfileService _profileService;
 
-    public AccountController(IAccountService accountService)
+    public AccountController(IAccountService accountService, IProfileService profileService)
     {
         _accountService = accountService;
+        _profileService = profileService;
     }
 
     [HttpPost]
@@ -70,12 +75,22 @@ public class AccountController : ControllerBase
 
         try
         {
-            var loggedInUser = await _accountService.LoginUserAsync(user);
+            var (loggedInUser, refreshToken) = await _accountService.LoginUserAsync(user);
+            
+            if(!string.IsNullOrEmpty(refreshToken))
+            {
+                SetRefreshTokenCookie(refreshToken);
+            }
 
             return Ok(new ApiResponse<object>()
             {
-                Data = loggedInUser,
-                Message = $"Login successful"
+                Data = new LoginResponse()
+                {
+                    AccessToken = loggedInUser.AccessToken,
+                    IsEmailVerified = loggedInUser.IsEmailVerified,
+                    IsEmailSent = loggedInUser.IsEmailSent
+                },
+                Message = GetLoginSuccessMessage(loggedInUser)
             });
         }
         catch (ApiException ex)
@@ -94,6 +109,17 @@ public class AccountController : ControllerBase
         }
     }
 
+    private string GetLoginSuccessMessage(LoginResponse loggedInUser)
+    {
+        if (loggedInUser.IsEmailVerified == false && loggedInUser.IsEmailSent == true)
+            return "Please check your email for verification. An OTP has been sent to your email address.";
+
+        else if (loggedInUser.IsEmailVerified == false && loggedInUser.IsEmailSent == false)
+            return "Your email is not verified. Please try again later.";
+
+        else
+            return "Login Successful.";
+    }
 
     [HttpGet]
     [Route("verifyemail")]
@@ -135,34 +161,79 @@ public class AccountController : ControllerBase
     [HttpPost]
     [Route("change-password")]
     [Authorize]
-    public IActionResult ChangePassword([FromBody] ChangePasswordDto changePassword)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePassword)
     {
-        // TODO
-        return Ok(User.Claims.Select(c => new
+        if (!ModelState.IsValid)
         {
-            c.Type,
-            c.Value
-        }));
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = "One or more fields are invalid."
+            });
+        }
+
+        try
+        {
+            await _profileService.ChangePasswordAsync(changePassword, User.FindFirstValue(ClaimTypes.Email));
+
+            return Ok(new ApiResponse<object>()
+            {
+                Message = "Password changed successfully."
+            });
+
+        }
+        catch(InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+        catch (Exception ex )
+        {
+            return StatusCode(500, new ApiResponse<object>()
+            {
+                Message = $"An unexpected error occurred."
+            });
+        }
+        
     }
 
     [HttpPost]
     [Route("token")]
-    public async Task<IActionResult> GetTokens([FromBody] string refreshToken)
+    public async Task<IActionResult> GetTokens()
     {
+        var refreshToken = Request.Cookies[RefreshTokenCookieName];
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return Unauthorized(new ApiResponse<object>()
+            {
+                Message = "Refresh token is missing. Please login again."
+            });
+        }
+
         try
         {
             TokenDto? tokens = await _accountService.GenerateTokensAsync(refreshToken);
+            SetRefreshTokenCookie(tokens?.RefreshToken);
 
-            return Ok(tokens);
+            return Ok(new ApiResponse<object>()
+            {
+                Data = new 
+                {
+                    accessToken = tokens?.AccessToken
+                },
+                Message = "Tokens refreshed successfully"
+            });
         }
-        catch(UnauthorizedException ex)
+        catch (UnauthorizedException ex)
         {
             return Unauthorized(new ApiResponse<object>()
             {
                 Message = ex.Message
             });
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return BadRequest(new ApiResponse<object>()
             {
@@ -171,4 +242,71 @@ public class AccountController : ControllerBase
         }
     }
 
+    [HttpPost]
+    [Route("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies[RefreshTokenCookieName];
+        Guid? userId = null;
+
+        var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (Guid.TryParse(userIdClaim, out var parsedUserId))
+        {
+            userId = parsedUserId;
+        }
+
+        await _accountService.LogoutAsync(refreshToken, userId);
+        RemoveRefreshTokenCookie();
+
+        return Ok(new ApiResponse<object>()
+        {
+            Message = "Logout successful"
+        });
+    }
+
+    [HttpGet]
+    [Route("profile")]
+    [Authorize]
+    public IActionResult UserProfile()
+    {
+        // Get user email from claims
+        var user = User.FindFirstValue(ClaimTypes.Email);
+
+        return Ok(new ApiResponse<object>()
+        {
+            Data = new
+            {
+                Email = user
+            },
+            Message = "User profile retrieved successfully"
+        });
+    }
+
+
+    private void SetRefreshTokenCookie(string? refreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return;
+        }
+
+        Response.Cookies.Append(RefreshTokenCookieName, refreshToken, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            MaxAge = TimeSpan.FromDays(30)
+        });
+    }
+
+    private void RemoveRefreshTokenCookie()
+    {
+        Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+        {
+            Path = "/",
+            Secure = true,
+            SameSite = SameSiteMode.None
+        });
+    }
 }

@@ -2,7 +2,7 @@
 
 public class LoginResponse
 {
-    public TokenDto? tokens { get; set; }
-    public bool isVerified { get; set; } = false;
-    public bool? isSent { get; set; } = null;
+    public string? AccessToken { get; set; }
+    public bool IsEmailVerified { get; set; } = false;
+    public bool? IsEmailSent { get; set; } = null;
 }
