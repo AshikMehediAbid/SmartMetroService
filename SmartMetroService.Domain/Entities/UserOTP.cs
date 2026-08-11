@@ -12,6 +12,7 @@ public class UserOTP
 
 public enum OtpType
 {
-    EmailVerification = 1,
+    PASSWORD_RECOVERY = 0,
+    EMAIL_VERIFICATION = 1,
     PasswordReset = 2
 }

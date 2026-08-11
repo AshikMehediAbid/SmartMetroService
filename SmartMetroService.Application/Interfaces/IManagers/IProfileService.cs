@@ -5,5 +5,7 @@ namespace SmartMetroService.Application.Interfaces.IManagers;
 public interface IProfileService
 {
     Task ChangePasswordAsync(ChangePasswordDto changePasswordDto, string email);
+    Task<bool> GetUserByEmailAsync(string email);
 
+    Task<bool> RecoverPasswordAsync(string email);
 }

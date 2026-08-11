@@ -172,7 +172,7 @@ public class AccountService : IAccountService
             return true;
         }
 
-        var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EmailVerification);
+        var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EMAIL_VERIFICATION);
 
         if (!validateOtp)
         {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartMetroService.Application.Interfaces.IRepositories;
+using SmartMetroService.Application.Models;
 using SmartMetroService.Domain.Entities;
 using SmartMetroService.Storage.Sql;
 
@@ -13,7 +14,19 @@ public class UserOTPRepository : Repository<UserOTP>, IUserOTPRepository
 
     public async Task<UserOTP?> GetByEmailAsync(string email, OtpType otpType)
     {
-        var data = await _dbSet.FirstOrDefaultAsync(o => o.Email == email && o.Type == otpType && o.IsUsed == false && o.ExpiryDate>=DateTime.UtcNow);
+        var data = await _dbSet.FirstOrDefaultAsync(o => o.Email == email && o.Type == otpType && o.IsUsed == false && o.ExpiryDate >= DateTime.UtcNow);
+
+        return data;
+    }
+
+    public async Task<UserOTP?> GetOtpDataAsync(OtpVerificationDto otpModel)
+    {
+        var data = await _dbSet.FirstOrDefaultAsync(
+            o => o.Email == otpModel.Email &&
+            o.Otp == otpModel.Otp &&
+            o.Type == otpModel.Type &&
+            o.IsUsed == false &&
+            o.ExpiryDate >= DateTime.UtcNow);
 
         return data;
     }

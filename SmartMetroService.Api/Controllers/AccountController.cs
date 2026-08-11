@@ -16,11 +16,13 @@ public class AccountController : ControllerBase
     private const string RefreshTokenCookieName = "refreshToken";
     private readonly IAccountService _accountService;
     private readonly IProfileService _profileService;
+    private readonly IOTPService _oTPService;
 
-    public AccountController(IAccountService accountService, IProfileService profileService)
+    public AccountController(IAccountService accountService, IProfileService profileService, IOTPService oTPService)
     {
         _accountService = accountService;
         _profileService = profileService;
+        _oTPService = oTPService;
     }
 
     [HttpPost]
@@ -198,6 +200,36 @@ public class AccountController : ControllerBase
         
     }
 
+
+    [HttpGet]
+    [Route("recover-password")]
+    public async Task<IActionResult> RecoverPassword(string email)
+    {
+        try
+        {
+            var result = await _profileService.RecoverPasswordAsync(email);
+
+            return Ok(new ApiResponse<object>()
+            {
+                Message = "Check your Email and login with the temporary password."
+            });
+        }
+        catch(NotFoundException ex)
+        {
+            return NotFound(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message= ex.Message
+            });
+        }
+    }
+
     [HttpPost]
     [Route("token")]
     public async Task<IActionResult> GetTokens()
@@ -265,21 +297,65 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet]
-    [Route("profile")]
-    [Authorize]
-    public IActionResult UserProfile()
+    [Route("user-profile")]
+    public async Task<IActionResult> UserProfile(string email)
     {
-        // Get user email from claims
-        var user = User.FindFirstValue(ClaimTypes.Email);
-
-        return Ok(new ApiResponse<object>()
+        try
         {
-            Data = new
+            var user = await _profileService.GetUserByEmailAsync(email);
+            
+            if (!user)
             {
-                Email = user
-            },
-            Message = "User profile retrieved successfully"
-        });
+                return NotFound(new ApiResponse<object>()
+                {
+                    Message = "User not found."
+                });
+            }
+
+            return Ok(new ApiResponse<object>()
+            {
+                Message = "User profile retrieved successfully."
+            });
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+    }
+
+    [HttpPost]
+    [Route("Verify-otp")]
+    public async Task<IActionResult> VerifyOtp(OtpVerificationDto otpVerificationDto)
+    {
+        try
+        {
+            var verifyOtp = await _oTPService.VerifyOtpAsync(otpVerificationDto);
+
+            return Ok(verifyOtp);
+        }
+        catch
+        {
+            return BadRequest(new ApiResponse<object>());
+        }
+    }
+
+    [HttpPost]
+    [Route("resend-otp")]
+    public async Task<IActionResult> ResendOtp(OtpVerificationDto otpVerificationDto)
+    {
+        try
+        {
+            var isSent = await _oTPService.SendOtpToEmailAsync(otpVerificationDto);
+
+            return Ok(isSent);
+        }
+        catch
+        {
+            return BadRequest(new ApiResponse<object>());
+        }
     }
 
 
