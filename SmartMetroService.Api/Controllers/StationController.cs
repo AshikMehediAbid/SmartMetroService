@@ -61,4 +61,23 @@ public class StationController : ControllerBase
             });
         }
     }
+
+    [HttpGet]
+    [Route("{orderByHints}")]
+    public async Task<IActionResult> GetAllStation(int orderByHints) // 1 = ascending; 0 = descending
+    {
+        try
+        {
+            var stations = await _stationService.GetAllStationAsync(orderByHints);
+
+            return Ok(new ApiResponse<object>()
+            {
+                Data = stations,
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }

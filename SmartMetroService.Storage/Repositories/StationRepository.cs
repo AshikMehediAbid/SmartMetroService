@@ -11,6 +11,18 @@ public class StationRepository : Repository<Station>, IStationRepository
     {
     }
 
+    public async Task<List<Station>> GetAllStationOrderBy(int orderBy)
+    {
+        var stations = await _dbSet
+            .AsNoTracking()
+            .OrderBy(x => orderBy == 1
+                ? x.StationOrder
+                : -x.StationOrder)
+            .ToListAsync();
+
+        return stations;
+    }
+
     public async Task<Station?> GetStationByOrderAsync(int order)
     {
         var station = await _dbSet.FirstOrDefaultAsync(s => s.StationOrder == order);
