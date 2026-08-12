@@ -8,19 +8,19 @@ public class UnitOfWork : IUnitOfWork
     private readonly MyApplicationDbContext _db;
 
     public IAccountRepository AccountRepository { get; }
-    public IUserOTPRepository UserTokenRepository { get; }
+    public IUserOTPRepository UserOtpRepository { get; }
 
     public ITokenRepository TokenRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
         IAccountRepository accountRepo,
-        IUserOTPRepository userTokenRepository,
+        IUserOTPRepository userOtpRepository,
         ITokenRepository tokenRepo)
     {
         _db = db;
 
         AccountRepository = accountRepo;
-        UserTokenRepository = userTokenRepository;
+        UserOtpRepository = userOtpRepository;
         TokenRepository = tokenRepo;
     }
 

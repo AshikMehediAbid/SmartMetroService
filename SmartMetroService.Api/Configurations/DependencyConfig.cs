@@ -16,6 +16,7 @@ public static class DependencyConfig
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IProfileService, ProfileService>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -39,5 +40,19 @@ public static class DependencyConfig
         services.AddDbContext<MyApplicationDbContext>(options =>
         options.UseSqlServer(connectionString)
         );
+
+        // Add CORS policy
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowNgFrontend",
+                builder =>
+                {
+                    builder
+                        .WithOrigins("http://localhost:4200") // Angular app origin
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
+                });
+        });
     }
 }

@@ -20,6 +20,16 @@ public class TokenRepository : Repository<Token>, ITokenRepository
         return token;
     }
 
+    public async Task RevokeTokenAsync(string hashedRefreshToken)
+    {
+        await _dbSet
+            .Where(t => t.TokenHash == hashedRefreshToken &&
+                        t.RevokedAt == null &&
+                        t.ExpiredAt >= DateTime.UtcNow)
+            .ExecuteUpdateAsync(update => update
+                .SetProperty(t => t.RevokedAt, DateTime.UtcNow));
+    }
+
     public async Task RevokeAllActiveTokensAsync(Guid userId)
     {
         await _dbSet

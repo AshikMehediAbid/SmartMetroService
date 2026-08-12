@@ -37,39 +37,36 @@ public class AccountService : IAccountService
     }
 
 
-    public async Task<LoginResponse> LoginUserAsync(LoginUserDto loginUser)
+    public async Task<(LoginResponse, string)> LoginUserAsync(LoginUserDto loginUser)
     {
         var user = await _uOW.AccountRepository.GetUserByPhoneNumberAsync(loginUser.PhoneNumber);
 
         ValidateloginInfo(user, loginUser);
 
-        var jwtToken = GenerateJwtToken(user.Id, user.Name, user.PhoneNumber, user.UserRole);
+        var jwtToken = GenerateJwtToken(user.Id, user.Name, user.Email, user.PhoneNumber, user.UserRole);
+
+        var loginResponse = new LoginResponse();
 
         if (!user.IsEmailVerified)
         {
-            var isSent = await SendEmailVerificationOtp(user.Email, user.Name);
-
-            return new LoginResponse
+            loginResponse = new LoginResponse
             {
-                tokens = new TokenDto()
-                {
-                    AccessToken = jwtToken,
-                    RefreshToken = await CreateNewRefreshTokenAsync(user.Id)
-                },
-                isSent = isSent,
-
+                AccessToken = user.Email,
+                IsEmailSent = await SendEmailVerificationOtp(user.Email, user.Name),
             };
+
+            return (loginResponse, string.Empty);
         }
 
-        return new LoginResponse
+        loginResponse = new LoginResponse
         {
-            tokens = new TokenDto()
-            {
-                AccessToken = jwtToken,
-                RefreshToken = await CreateNewRefreshTokenAsync(user.Id)
-            },
-            isVerified = true
+            AccessToken = jwtToken,
+            IsEmailVerified = true
         };
+
+        var refreshToken = await CreateNewRefreshTokenAsync(user.Id);
+
+        return (loginResponse, refreshToken );
     }
 
 
@@ -129,7 +126,7 @@ public class AccountService : IAccountService
 
 
 
-    private string GenerateJwtToken(Guid id, string name, string phoneNumber, UserRole userRole)
+    private string GenerateJwtToken(Guid id, string name, string email, string phoneNumber, UserRole userRole)
     {
         try
         {
@@ -137,6 +134,7 @@ public class AccountService : IAccountService
             {
                 new Claim(JwtRegisteredClaimNames.Sub, id.ToString()),
                 new Claim(ClaimTypes.Name, name?? "no name"),
+                new Claim(ClaimTypes.Email, email?? "no email"),
                 new Claim(ClaimTypes.MobilePhone, phoneNumber),
                 new Claim(ClaimTypes.Role, userRole.ToString())
             };
@@ -148,7 +146,7 @@ public class AccountService : IAccountService
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(3),
                 signingCredentials: credentials
             );
 
@@ -174,7 +172,7 @@ public class AccountService : IAccountService
             return true;
         }
 
-        var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EmailVerification);
+        var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EMAIL_VERIFICATION);
 
         if (!validateOtp)
         {
@@ -188,9 +186,27 @@ public class AccountService : IAccountService
         return true;
     }
 
+    public async Task LogoutAsync(string? refreshToken, Guid? userId = null)
+    {
+        if (userId.HasValue)
+        {
+            await _uOW.TokenRepository.RevokeAllActiveTokensAsync(userId.Value);
+            await _uOW.CompleteAsync();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return;
+        }
+
+        await _uOW.TokenRepository.RevokeTokenAsync(ComputeSha256(refreshToken));
+        await _uOW.CompleteAsync();
+    }
+
     public async Task<TokenDto?> GenerateTokensAsync(string refreshToken)
     {
-        var token = await _uOW.TokenRepository.GetTokenAsync( ComputeSha256(refreshToken));
+        var token = await _uOW.TokenRepository.GetTokenAsync(ComputeSha256(refreshToken));
 
         if (token is null || token.ExpiredAt < DateTime.UtcNow)
         {
@@ -215,14 +231,14 @@ public class AccountService : IAccountService
 
         var tokens = new TokenDto()
         {
-            AccessToken = GenerateJwtToken(user.Id, user.Name, user.PhoneNumber, user.UserRole),
+            AccessToken = GenerateJwtToken(user.Id, user.Name, user.Email, user.PhoneNumber, user.UserRole),
             RefreshToken = newRefToken,
         };
 
         return tokens;
     }
 
-    private async Task<string> CreateNewRefreshTokenAsync(Guid userId)
+    public async Task<string> CreateNewRefreshTokenAsync(Guid userId)
     {
         var newRefToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
@@ -232,8 +248,10 @@ public class AccountService : IAccountService
             TokenHash = ComputeSha256(newRefToken),
         };
 
+        await _uOW.TokenRepository.RevokeAllActiveTokensAsync(userId);
         await _uOW.TokenRepository.AddAsync(newTokenEntity);
         await _uOW.CompleteAsync();
+
         return newRefToken;
     }
 

@@ -1,7 +1,11 @@
-﻿namespace SmartMetroService.Application.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace SmartMetroService.Application.Models;
 
 public class TokenDto
 {
     public string AccessToken { get; set; }
-    public string RefreshToken { get; set; }
+
+    [JsonIgnore]
+    public string? RefreshToken { get; set; }
 }
