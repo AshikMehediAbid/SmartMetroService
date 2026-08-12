@@ -9,6 +9,7 @@ using SmartMetroService.Domain.Entities;
 using SmartMetroService.Domain.Enums;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SmartMetroService.Application.Managers;
@@ -36,42 +37,48 @@ public class AccountService : IAccountService
     }
 
 
-    public async Task<LoginResponse> LoginUserAsync(LoginUserDto loginUser)
+    public async Task<(LoginResponse, string)> LoginUserAsync(LoginUserDto loginUser)
     {
         var user = await _uOW.AccountRepository.GetUserByPhoneNumberAsync(loginUser.PhoneNumber);
 
         ValidateloginInfo(user, loginUser);
 
-        var jwtToken = GenerateJwtToken(user.Id, user.Name, user.PhoneNumber, user.UserRole);
+        var jwtToken = GenerateJwtToken(user.Id, user.Name, user.Email, user.PhoneNumber, user.UserRole);
+
+        var loginResponse = new LoginResponse();
 
         if (!user.IsEmailVerified)
         {
-            var isSent = await SendEmailVerificetionOtp(user.Email, user.Name);
-
-            return new LoginResponse
+            loginResponse = new LoginResponse
             {
-                token = jwtToken,
-                isSent = isSent
+                AccessToken = user.Email,
+                IsEmailSent = await SendEmailVerificationOtp(user.Email, user.Name),
             };
+
+            return (loginResponse, string.Empty);
         }
 
-        return new LoginResponse
+        loginResponse = new LoginResponse
         {
-            token = jwtToken,
-            isVerified = true
+            AccessToken = jwtToken,
+            IsEmailVerified = true
         };
+
+        var refreshToken = await CreateNewRefreshTokenAsync(user.Id);
+
+        return (loginResponse, refreshToken );
     }
 
 
-    private async Task<bool> SendEmailVerificetionOtp(string email, string name)
+    private async Task<bool> SendEmailVerificationOtp(string email, string name)
     {
         var otp = await _otpService.GenerateEmailVerificationOtp(email);
 
         var isSent = await _emailService.
             SendEmailAsync(
                 email: email,
-                subject: "Your email verification OTP",
-                message: $"Your Smart Metro Service account verification OTP is {otp}. " +
+                subject: "Smart Metro Service - Email Verification OTP",
+                message: $"Dear {name}, Your Smart Metro Service account verification OTP is - {otp}. " +
                 $"It will be valid for the next 10 minutes. Do NOT share this OTP with anyone."
             );
 
@@ -119,7 +126,7 @@ public class AccountService : IAccountService
 
 
 
-    private string GenerateJwtToken(Guid id, string name, string phoneNumber, UserRole userRole)
+    private string GenerateJwtToken(Guid id, string name, string email, string phoneNumber, UserRole userRole)
     {
         try
         {
@@ -127,6 +134,7 @@ public class AccountService : IAccountService
             {
                 new Claim(JwtRegisteredClaimNames.Sub, id.ToString()),
                 new Claim(ClaimTypes.Name, name?? "no name"),
+                new Claim(ClaimTypes.Email, email?? "no email"),
                 new Claim(ClaimTypes.MobilePhone, phoneNumber),
                 new Claim(ClaimTypes.Role, userRole.ToString())
             };
@@ -138,7 +146,7 @@ public class AccountService : IAccountService
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(3),
                 signingCredentials: credentials
             );
 
@@ -164,7 +172,7 @@ public class AccountService : IAccountService
             return true;
         }
 
-        var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EmailVerification);
+        var validateOtp = await _otpService.ValidateOtpAsync(email, otp, OtpType.EMAIL_VERIFICATION);
 
         if (!validateOtp)
         {
@@ -176,5 +184,83 @@ public class AccountService : IAccountService
         await _uOW.CompleteAsync();
 
         return true;
+    }
+
+    public async Task LogoutAsync(string? refreshToken, Guid? userId = null)
+    {
+        if (userId.HasValue)
+        {
+            await _uOW.TokenRepository.RevokeAllActiveTokensAsync(userId.Value);
+            await _uOW.CompleteAsync();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return;
+        }
+
+        await _uOW.TokenRepository.RevokeTokenAsync(ComputeSha256(refreshToken));
+        await _uOW.CompleteAsync();
+    }
+
+    public async Task<TokenDto?> GenerateTokensAsync(string refreshToken)
+    {
+        var token = await _uOW.TokenRepository.GetTokenAsync(ComputeSha256(refreshToken));
+
+        if (token is null || token.ExpiredAt < DateTime.UtcNow)
+        {
+            throw new UnauthorizedException("Unauthorize Access. Need to login again");
+        }
+
+        else if (token.RevokedAt != null)
+        {
+            await _uOW.TokenRepository.RevokeAllActiveTokensAsync(token.UserId);
+            await _uOW.CompleteAsync();
+            throw new UnauthorizedException("Unauthorize Access. Need to login again");
+        }
+
+        string newRefToken = await CreateNewRefreshTokenAsync(token.UserId);
+
+        //Revoke old refresh token
+        token.RevokedAt = DateTime.UtcNow;
+
+        await _uOW.CompleteAsync();
+
+        var user = await _uOW.AccountRepository.GetByIdAsync(token.UserId);
+
+        var tokens = new TokenDto()
+        {
+            AccessToken = GenerateJwtToken(user.Id, user.Name, user.Email, user.PhoneNumber, user.UserRole),
+            RefreshToken = newRefToken,
+        };
+
+        return tokens;
+    }
+
+    public async Task<string> CreateNewRefreshTokenAsync(Guid userId)
+    {
+        var newRefToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        var newTokenEntity = new Token()
+        {
+            UserId = userId,
+            TokenHash = ComputeSha256(newRefToken),
+        };
+
+        await _uOW.TokenRepository.RevokeAllActiveTokensAsync(userId);
+        await _uOW.TokenRepository.AddAsync(newTokenEntity);
+        await _uOW.CompleteAsync();
+
+        return newRefToken;
+    }
+
+    private static string ComputeSha256(string value)
+    {
+        using var sha = SHA256.Create();
+
+        var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
+
+        return Convert.ToHexString(bytes);
     }
 }

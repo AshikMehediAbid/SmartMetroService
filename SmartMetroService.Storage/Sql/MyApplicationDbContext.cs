@@ -11,7 +11,7 @@ public class MyApplicationDbContext : DbContext
     public DbSet<UserOTP> UserTokens { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<StationDistance> StationDistances { get; set; }
-
+    public DbSet<Token> Tokens { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,4 +28,7 @@ public class MyApplicationDbContext : DbContext
             .HasForeignKey(sd => sd.ToStationId)
             .OnDelete(DeleteBehavior.NoAction);
     }
+
+
+
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartMetroService.Storage.Sql;
 
@@ -11,9 +12,11 @@ using SmartMetroService.Storage.Sql;
 namespace SmartMetroService.Storage.Migrations
 {
     [DbContext(typeof(MyApplicationDbContext))]
-    partial class MyApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731112511_Add_Token_Table")]
+    partial class Add_Token_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,53 +25,7 @@ namespace SmartMetroService.Storage.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-<<<<<<< HEAD
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Station", b =>
-                {
-                    b.Property<int>("StationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StationId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<string>("StationLocation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("StationName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("StationOrder")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("StationId");
-
-                    b.ToTable("Stations");
-                });
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.StationDistance", b =>
-=======
             modelBuilder.Entity("SmartMetroService.Domain.Entities.Token", b =>
->>>>>>> master
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,27 +36,15 @@ namespace SmartMetroService.Storage.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
-                    b.Property<double>("Distance")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("FromStationId")
-                        .HasColumnType("int");
-=======
                     b.Property<string>("CreatedByIp")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ExpiredAt")
                         .HasColumnType("datetime2");
->>>>>>> master
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-<<<<<<< HEAD
-                    b.Property<int?>("ToStationId")
-                        .HasColumnType("int");
-=======
                     b.Property<DateTime?>("RevokedAt")
                         .HasColumnType("datetime2");
 
@@ -109,27 +54,16 @@ namespace SmartMetroService.Storage.Migrations
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
->>>>>>> master
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromStationId");
-
-                    b.HasIndex("ToStationId");
-
-                    b.ToTable("StationDistances");
-=======
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.ToTable("Tokens");
->>>>>>> master
                 });
 
             modelBuilder.Entity("SmartMetroService.Domain.Entities.User", b =>
@@ -202,30 +136,6 @@ namespace SmartMetroService.Storage.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserTokens");
-                });
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.StationDistance", b =>
-                {
-                    b.HasOne("SmartMetroService.Domain.Entities.Station", "FromStation")
-                        .WithMany("FromDistances")
-                        .HasForeignKey("FromStationId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("SmartMetroService.Domain.Entities.Station", "ToStation")
-                        .WithMany("ToDistances")
-                        .HasForeignKey("ToStationId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("FromStation");
-
-                    b.Navigation("ToStation");
-                });
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Station", b =>
-                {
-                    b.Navigation("FromDistances");
-
-                    b.Navigation("ToDistances");
                 });
 #pragma warning restore 612, 618
         }

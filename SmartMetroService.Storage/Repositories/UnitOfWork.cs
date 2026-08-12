@@ -11,19 +11,23 @@ public class UnitOfWork : IUnitOfWork
     public IUserOTPRepository UserTokenRepository { get; }
     public IStationRepository StationRepository { get; }
     public IStationDistanceRepository StationDistanceRepository { get; }
+    public IUserOTPRepository UserOtpRepository { get; }
+    public ITokenRepository TokenRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
         IAccountRepository accountRepo,
-        IUserOTPRepository userTokenRepository,
+        IUserOTPRepository userOtpRepository,
         IStationRepository stationRepository,
-        IStationDistanceRepository stationDistanceRepository)
-    {
+        IStationDistanceRepository stationDistanceRepository,
+        ITokenRepository tokenRepo){
         _db = db;
 
         AccountRepository = accountRepo;
-        UserTokenRepository = userTokenRepository;
         StationRepository = stationRepository;
         StationDistanceRepository = stationDistanceRepository;
+        UserOtpRepository = userOtpRepository;
+        TokenRepository = tokenRepo;
+
     }
 
     public async Task<int> CompleteAsync()

@@ -1,8 +1,10 @@
-﻿using SmartMetroService.Domain.Entities;
+﻿using SmartMetroService.Application.Models;
+using SmartMetroService.Domain.Entities;
 
 namespace SmartMetroService.Application.Interfaces.IRepositories;
 
 public interface IUserOTPRepository : IRepository<UserOTP>
 {
     Task<UserOTP> GetByEmailAsync(string email, OtpType emailVerification);
+    Task<UserOTP?> GetOtpDataAsync(OtpVerificationDto otpVerificationDto);
 }

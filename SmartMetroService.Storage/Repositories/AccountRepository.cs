@@ -33,7 +33,7 @@ public class AccountRepository : Repository<User>, IAccountRepository
 
         var isPhoneNumberExist = await _dbSet.AnyAsync(u => u.PhoneNumber == phoneNumber);
 
-        return isEmailExist ? (true, "PhoneNumber") : (false,null);
+        return isPhoneNumberExist ? (true, "PhoneNumber") : (false,null);
 
     }
 }
