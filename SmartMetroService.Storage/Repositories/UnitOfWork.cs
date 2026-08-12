@@ -8,20 +8,26 @@ public class UnitOfWork : IUnitOfWork
     private readonly MyApplicationDbContext _db;
 
     public IAccountRepository AccountRepository { get; }
+    public IUserOTPRepository UserTokenRepository { get; }
+    public IStationRepository StationRepository { get; }
+    public IStationDistanceRepository StationDistanceRepository { get; }
     public IUserOTPRepository UserOtpRepository { get; }
-
     public ITokenRepository TokenRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
         IAccountRepository accountRepo,
         IUserOTPRepository userOtpRepository,
-        ITokenRepository tokenRepo)
-    {
+        IStationRepository stationRepository,
+        IStationDistanceRepository stationDistanceRepository,
+        ITokenRepository tokenRepo){
         _db = db;
 
         AccountRepository = accountRepo;
+        StationRepository = stationRepository;
+        StationDistanceRepository = stationDistanceRepository;
         UserOtpRepository = userOtpRepository;
         TokenRepository = tokenRepo;
+
     }
 
     public async Task<int> CompleteAsync()
