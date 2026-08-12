@@ -17,23 +17,18 @@ public static class DependencyConfig
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddScoped<IEmailService, EmailService>();
-<<<<<<< HEAD
         services.AddScoped<IStationService, StationService>();
-=======
         services.AddScoped<IProfileService, ProfileService>();
->>>>>>> master
+
 
         // Repository Registration
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IUserOTPRepository, UserOTPRepository>();
-<<<<<<< HEAD
         services.AddScoped<IStationRepository, StationRepository>();
         services.AddScoped<IStationDistanceRepository, StationDistanceRepository>();
-=======
         services.AddScoped<ITokenRepository, TokenRepository>();
->>>>>>> master
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
