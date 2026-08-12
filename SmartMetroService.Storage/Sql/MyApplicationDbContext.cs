@@ -9,9 +9,9 @@ public class MyApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<UserOTP> UserOtps { get; set; }
+    public DbSet<Token> RefreshTokens { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<StationDistance> StationDistances { get; set; }
-    public DbSet<Token> RefreshTokens { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -28,7 +28,5 @@ public class MyApplicationDbContext : DbContext
             .HasForeignKey(sd => sd.ToStationId)
             .OnDelete(DeleteBehavior.NoAction);
     }
-
-
 
 }
