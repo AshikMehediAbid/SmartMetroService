@@ -13,15 +13,21 @@ public static class DependencyConfig
 {
     public static void AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        // Service Registration
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IOTPService, OTPService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IStationService, StationService>();
         services.AddScoped<IProfileService, ProfileService>();
 
+
+        // Repository Registration
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IUserOTPRepository, UserOTPRepository>();
+        services.AddScoped<IStationRepository, StationRepository>();
+        services.AddScoped<IStationDistanceRepository, StationDistanceRepository>();
         services.AddScoped<ITokenRepository, TokenRepository>();
 
         // AutoMapper
