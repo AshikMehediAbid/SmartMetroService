@@ -7,6 +7,7 @@ public interface IUnitOfWork : IDisposable
     IStationDistanceRepository StationDistanceRepository { get; }
     IUserOTPRepository UserOtpRepository { get; }
     ITokenRepository TokenRepository { get; }
+    IAdminRepository AdminRepository { get; }
 
 
     Task<int> CompleteAsync();

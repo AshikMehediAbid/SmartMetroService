@@ -12,6 +12,7 @@ public class MyApplicationDbContext : DbContext
     public DbSet<Token> RefreshTokens { get; set; }
     public DbSet<Station> Stations { get; set; }
     public DbSet<StationDistance> StationDistances { get; set; }
+    public DbSet<Settings> Settings { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
