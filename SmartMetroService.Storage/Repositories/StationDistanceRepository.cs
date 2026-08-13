@@ -23,6 +23,17 @@ public class StationDistanceRepository : Repository<StationDistance>, IStationDi
         await _dbSet.AddAsync(stationDistanceEntity);
     }
 
+    public async Task<double?> GetDistanceByConsicutiveStationAsync(int stationId1, int stationId2)
+    {
+        var distance = await _dbSet
+            .Where(sd => sd.FromStationId == stationId1 &&
+                     sd.ToStationId == stationId2)
+            .Select(sd => (double?)sd.Distance)
+            .FirstOrDefaultAsync();
+
+        return distance;
+    }
+
     public async Task<bool> StationDistanceAlreadyAddedAsync(StationDistance entity)
     {
         bool isExist = await _dbSet

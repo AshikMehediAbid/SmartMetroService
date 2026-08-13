@@ -23,6 +23,13 @@ public class StationRepository : Repository<Station>, IStationRepository
         return stations;
     }
 
+    public async Task<Station?> GetStationByIdAsync(int stationId)
+    {
+        var station = await _dbSet.FirstOrDefaultAsync(s=>s.StationId == stationId);
+
+        return station;
+    }
+
     public async Task<Station?> GetStationByOrderAsync(int order)
     {
         var station = await _dbSet.FirstOrDefaultAsync(s => s.StationOrder == order);

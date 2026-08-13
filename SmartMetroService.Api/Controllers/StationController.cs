@@ -80,4 +80,13 @@ public class StationController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpGet]
+    [Route("fare")]
+    public async Task<IActionResult> StationFare(int fromStationId, int toStationId = 0)
+    {
+        List<StationFareDto> result = await _stationService.GetFare(fromStationId, toStationId);
+
+        return Ok(result);
+    }
 }
