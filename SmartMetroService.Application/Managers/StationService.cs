@@ -58,6 +58,16 @@ public class StationService : IStationService
         }
     }
 
+    public async Task<List<StationDetailsDto>?> GetAllStationAsync(int orderBy)
+    {
+        var stationEntity = await _unitOfWork.StationRepository.GetAllStationOrderBy(orderBy);
+
+        var stations = _mapper.Map<List<StationDetailsDto>>(stationEntity);
+
+        return stations;
+
+    }
+
     private async Task AddNewStationDistance(StationCreationDto stationCreationDto)
     {
         Station? previousStation = await _unitOfWork.StationRepository.GetStationByOrderAsync(stationCreationDto.InsertAfter);
