@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Domain.Entities;
 
 namespace SmartMetroService.Api.Controllers;
 
+[Authorize(Roles = "Admin")]
 [Route("api/admin")]
 [ApiController]
 public class AdminController : ControllerBase
