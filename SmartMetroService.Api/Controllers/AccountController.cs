@@ -385,4 +385,22 @@ public class AccountController : ControllerBase
             SameSite = SameSiteMode.None
         });
     }
+
+
+    [Authorize]
+    [HttpPost]
+    [Route("keycloak-user")]
+    public async Task<IActionResult> SaveKeycloakUser(KeycloakUserDto keycloakUser)
+    {
+        try
+        {
+            await _accountService.SaveKeyCloakUserAsync(keycloakUser);
+
+            return Ok();
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
 }
