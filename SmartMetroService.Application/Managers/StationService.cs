@@ -4,7 +4,6 @@ using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Interfaces.IRepositories;
 using SmartMetroService.Application.Models;
 using SmartMetroService.Domain.Entities;
-using System.Data;
 
 namespace SmartMetroService.Application.Managers;
 
@@ -78,13 +77,54 @@ public class StationService : IStationService
         var toStationData = await _unitOfWork.StationRepository.GetStationByIdAsync(toStationId);
 
         var stationFare = new List<StationFareDto>();
-        
+
+        if (toStationData is not null)
+        {
+            var minOrder = Math.Min(fromStationData.StationOrder, toStationData.StationOrder);
+            var maxOrder = Math.Max(fromStationData.StationOrder, toStationData.StationOrder);
+
+            double fixedStationDistance = await CalculateFixedToStationDistance(minOrder, maxOrder);
+            var settings = await _unitOfWork.AdminRepository.GetSettingsAsync();
+
+            var fixedTwoStationFare = new StationFareDto()
+            {
+                FromStation = fromStationData.StationName,
+                ToStation = toStationData.StationName,
+                Distance = Math.Round(fixedStationDistance, 2),
+                Fare = CalculateFare(settings.UnitFare, fixedStationDistance, settings.MinimumFare)
+            };
+
+            stationFare.Add(fixedTwoStationFare);
+            return stationFare;
+        }
+
+
+
         stationFare = await CalculateStationFare(fromStationData);
 
         return stationFare;
-        
+
     }
 
+    private async Task<double> CalculateFixedToStationDistance(int minOrder, int maxOrder)
+    {
+        double totalDistance = 0;
+
+        var minOrderedStationData = await _unitOfWork.StationRepository.GetStationByOrderAsync(minOrder);
+
+        for (int i = minOrder + 1; i<= maxOrder; i++)
+        {
+            var station = await _unitOfWork.StationRepository.GetStationByOrderAsync(i);
+
+            var consicutiveDistance = await CalculateStationDistance(minOrderedStationData.StationId, station.StationId);
+
+            totalDistance += consicutiveDistance;
+            minOrderedStationData = station;
+
+        }
+
+        return totalDistance;
+    }
 
     private async Task<List<StationFareDto>> CalculateStationFare(Station fromStationData)
     {
@@ -93,7 +133,7 @@ public class StationService : IStationService
         double cumsum = 0;
         var settings = await _unitOfWork.AdminRepository.GetSettingsAsync();
         var lastStationId = fromStationData.StationId;
-       
+
         for (int i = fromStationData.StationOrder - 1; i > 0; i--)
         {
             var station = await _unitOfWork.StationRepository.GetStationByOrderAsync(i);
