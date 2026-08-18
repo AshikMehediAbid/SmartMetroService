@@ -69,7 +69,7 @@ public class AccountService : IAccountService
 
         var refreshToken = await CreateNewRefreshTokenAsync(user.Id);
 
-        return (loginResponse, refreshToken );
+        return (loginResponse, refreshToken);
     }
 
 
@@ -265,5 +265,34 @@ public class AccountService : IAccountService
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(value));
 
         return Convert.ToHexString(bytes);
+    }
+
+    public async Task SaveKeyCloakUserAsync(KeycloakUserDto keycloakUser)
+    {
+        var existingUser = await _uOW.AccountRepository.GetUserByEmailAsync(keycloakUser.Email);
+
+        if (existingUser != null)
+        {
+            if (existingUser.KeycloakUserId == keycloakUser.KeycloakUserId)
+                return;
+
+            existingUser.KeycloakUserId = keycloakUser.KeycloakUserId;
+            await _uOW.CompleteAsync();
+            return;
+        }
+
+
+        var userEntity = new User()
+        {
+            Name = keycloakUser.Name,
+            Email = keycloakUser.Email,
+            PhoneNumber = "111",
+            KeycloakUserId = keycloakUser.KeycloakUserId,
+            UserRole = keycloakUser.Roles.Contains("Admin") ? UserRole.Admin : UserRole.User,
+            HashedPassword = "No need"
+        };
+
+        var registerdUserEntity = await _uOW.AccountRepository.AddAsync(userEntity);
+        await _uOW.CompleteAsync();
     }
 }

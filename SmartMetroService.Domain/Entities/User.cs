@@ -12,4 +12,5 @@ public class User : BaseEntity
     public required string HashedPassword { get; set; }
     public UserRole UserRole { get; set; } = UserRole.User;
     public bool IsEmailVerified { get; set; } = false;
+    public Guid? KeycloakUserId { get; set; } = null;
 }
