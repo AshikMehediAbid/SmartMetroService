@@ -46,8 +46,9 @@ public class Repository<T> : IRepository<T> where T : class
         return entity;
     }
 
-    public Task<T> UpdateAsync(T entity)
+    public async Task<T> UpdateAsync(T entity)
     {
-        throw new NotImplementedException();
+       _dbSet.Update(entity);
+        return entity;
     }
 }

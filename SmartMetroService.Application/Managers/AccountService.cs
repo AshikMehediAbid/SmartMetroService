@@ -42,22 +42,6 @@ public class AccountService : IAccountService
 
     public async Task<(LoginResponse, string)> LoginUserAsync(LoginUserDto loginUser)
     {
-        var isAdmin = CheckAdmin(loginUser);
-        if(isAdmin)
-        {
-            var id = Guid.NewGuid();
-            var jwt = GenerateJwtToken(id, "Admin", _config["AdminConfiguration:Email"] , _config["AdminConfiguration:Phone"], UserRole.Admin);
-            var refresh = await CreateNewRefreshTokenAsync(id);
-
-            var response = new LoginResponse
-            {
-                AccessToken = jwt,
-                IsEmailVerified = true
-            };
-
-            return (response, refresh);
-        }
-
         var user = await _uOW.AccountRepository.GetUserByPhoneNumberAsync(loginUser.PhoneNumber);
 
         ValidateloginInfo(user, loginUser);
@@ -88,15 +72,6 @@ public class AccountService : IAccountService
         return (loginResponse, refreshToken );
     }
 
-    private bool CheckAdmin(LoginUserDto loginUser)
-    {
-        if (loginUser.PhoneNumber == _config["AdminConfiguration:Phone"] &&
-            loginUser.PassWord == _config["AdminConfiguration:Password"])
-        {
-            return true;
-        }
-        return false;
-    }
 
     private async Task<bool> SendEmailVerificationOtp(string email, string name)
     {

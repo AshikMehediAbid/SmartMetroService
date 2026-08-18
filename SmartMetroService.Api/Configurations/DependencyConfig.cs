@@ -19,6 +19,7 @@ public static class DependencyConfig
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IStationService, StationService>();
         services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IAdminService, AdminService>();
 
 
         // Repository Registration
@@ -29,6 +30,7 @@ public static class DependencyConfig
         services.AddScoped<IStationRepository, StationRepository>();
         services.AddScoped<IStationDistanceRepository, StationDistanceRepository>();
         services.AddScoped<ITokenRepository, TokenRepository>();
+        services.AddScoped<IAdminRepository, AdminRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
