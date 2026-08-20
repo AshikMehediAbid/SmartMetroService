@@ -209,7 +209,8 @@ public class AccountService : IAccountService
 
     public async Task<TokenDto?> GenerateTokensAsync(string refreshToken)
     {
-        var token = await _uOW.TokenRepository.GetRefreshTokenAsync(ComputeSha256(refreshToken));
+        var hashedRefreshToken = ComputeSha256(refreshToken);
+        var token = await _uOW.TokenRepository.GetRefreshTokenAsync(hashedRefreshToken);
 
         if (token is null || token.ExpiredAt < DateTime.UtcNow)
         {
@@ -220,7 +221,7 @@ public class AccountService : IAccountService
         {
             await _uOW.TokenRepository.RevokeAllActiveTokensAsync(token.UserId);
             await _uOW.CompleteAsync();
-            throw new UnauthorizedException("Unauthorize Access. Need to login again");
+            throw new UnauthorizedException("Token is already used. Need to login again");
         }
 
         string newRefToken = await CreateNewRefreshTokenAsync(token.UserId);
@@ -251,7 +252,6 @@ public class AccountService : IAccountService
             TokenHash = ComputeSha256(newRefToken),
         };
 
-        await _uOW.TokenRepository.RevokeAllActiveTokensAsync(userId);
         await _uOW.TokenRepository.AddAsync(newTokenEntity);
         await _uOW.CompleteAsync();
 
