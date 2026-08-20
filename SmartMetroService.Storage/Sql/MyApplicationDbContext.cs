@@ -13,6 +13,7 @@ public class MyApplicationDbContext : DbContext
     public DbSet<Station> Stations { get; set; }
     public DbSet<StationDistance> StationDistances { get; set; }
     public DbSet<Settings> Settings { get; set; }
+    public DbSet<UserWallet> UserWallets { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

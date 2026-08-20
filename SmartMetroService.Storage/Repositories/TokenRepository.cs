@@ -13,7 +13,7 @@ public class TokenRepository : Repository<Token>, ITokenRepository
     {
     }
 
-    public async Task<Token?> GetTokenAsync(string hash)
+    public async Task<Token?> GetRefreshTokenAsync(string hash)
     {
         var token = await _dbSet.FirstOrDefaultAsync(t => t.TokenHash == hash);
 

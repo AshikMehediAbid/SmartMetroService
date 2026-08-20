@@ -209,7 +209,7 @@ public class AccountService : IAccountService
 
     public async Task<TokenDto?> GenerateTokensAsync(string refreshToken)
     {
-        var token = await _uOW.TokenRepository.GetTokenAsync(ComputeSha256(refreshToken));
+        var token = await _uOW.TokenRepository.GetRefreshTokenAsync(ComputeSha256(refreshToken));
 
         if (token is null || token.ExpiredAt < DateTime.UtcNow)
         {

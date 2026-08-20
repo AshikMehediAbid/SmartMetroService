@@ -20,6 +20,8 @@ public static class DependencyConfig
         services.AddScoped<IStationService, StationService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IWalletService, WalletService>();
+        services.AddScoped<IPaymentService, PaymentService>();
 
 
         // Repository Registration
@@ -31,6 +33,7 @@ public static class DependencyConfig
         services.AddScoped<IStationDistanceRepository, StationDistanceRepository>();
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();
+        services.AddScoped<IWalletRepository, WalletRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

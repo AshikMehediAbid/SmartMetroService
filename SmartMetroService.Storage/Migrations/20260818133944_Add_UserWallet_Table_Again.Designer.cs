@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartMetroService.Storage.Sql;
 
@@ -11,9 +12,11 @@ using SmartMetroService.Storage.Sql;
 namespace SmartMetroService.Storage.Migrations
 {
     [DbContext(typeof(MyApplicationDbContext))]
-    partial class MyApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818133944_Add_UserWallet_Table_Again")]
+    partial class Add_UserWallet_Table_Again
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

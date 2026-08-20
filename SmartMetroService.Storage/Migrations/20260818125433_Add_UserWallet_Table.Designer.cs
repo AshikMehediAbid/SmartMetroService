@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartMetroService.Storage.Sql;
 
@@ -11,9 +12,11 @@ using SmartMetroService.Storage.Sql;
 namespace SmartMetroService.Storage.Migrations
 {
     [DbContext(typeof(MyApplicationDbContext))]
-    partial class MyApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818125433_Add_UserWallet_Table")]
+    partial class Add_UserWallet_Table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,33 +244,6 @@ namespace SmartMetroService.Storage.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserOtps");
-                });
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.UserWallet", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("Balance")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserWallets");
                 });
 
             modelBuilder.Entity("SmartMetroService.Domain.Entities.StationDistance", b =>
