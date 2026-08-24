@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartMetroService.Storage.Sql;
 
@@ -11,9 +12,11 @@ using SmartMetroService.Storage.Sql;
 namespace SmartMetroService.Storage.Migrations
 {
     [DbContext(typeof(MyApplicationDbContext))]
-    partial class MyApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260818133944_Add_UserWallet_Table_Again")]
+    partial class Add_UserWallet_Table_Again
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,55 +24,6 @@ namespace SmartMetroService.Storage.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Journey", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("EndAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Fare")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FromStationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("JourneyStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("TicketId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("ToStationId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FromStationId");
-
-                    b.HasIndex("JourneyStatus");
-
-                    b.HasIndex("StartAt");
-
-                    b.HasIndex("TicketId");
-
-                    b.HasIndex("ToStationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Journeys");
-                });
 
             modelBuilder.Entity("SmartMetroService.Domain.Entities.Settings", b =>
                 {
@@ -174,60 +128,6 @@ namespace SmartMetroService.Storage.Migrations
                     b.HasIndex("ToStationId");
 
                     b.ToTable("StationDistances");
-                });
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Ticket", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ExpiryTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Fare")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("FromStationId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<byte[]>("QRByte")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<int>("TicketStatus")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TicketType")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ToStationId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpiryTime");
-
-                    b.HasIndex("FromStationId");
-
-                    b.HasIndex("TicketStatus");
-
-                    b.HasIndex("ToStationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("SmartMetroService.Domain.Entities.Token", b =>
@@ -373,33 +273,6 @@ namespace SmartMetroService.Storage.Migrations
                     b.ToTable("UserWallets");
                 });
 
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Journey", b =>
-                {
-                    b.HasOne("SmartMetroService.Domain.Entities.Station", "FromStation")
-                        .WithMany()
-                        .HasForeignKey("FromStationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("SmartMetroService.Domain.Entities.Ticket", "Ticket")
-                        .WithMany("Journeys")
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SmartMetroService.Domain.Entities.Station", "ToStation")
-                        .WithMany()
-                        .HasForeignKey("ToStationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FromStation");
-
-                    b.Navigation("Ticket");
-
-                    b.Navigation("ToStation");
-                });
-
             modelBuilder.Entity("SmartMetroService.Domain.Entities.StationDistance", b =>
                 {
                     b.HasOne("SmartMetroService.Domain.Entities.Station", "FromStation")
@@ -417,37 +290,11 @@ namespace SmartMetroService.Storage.Migrations
                     b.Navigation("ToStation");
                 });
 
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Ticket", b =>
-                {
-                    b.HasOne("SmartMetroService.Domain.Entities.Station", "FromStation")
-                        .WithMany("FromTickets")
-                        .HasForeignKey("FromStationId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("SmartMetroService.Domain.Entities.Station", "ToStation")
-                        .WithMany("ToTickets")
-                        .HasForeignKey("ToStationId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("FromStation");
-
-                    b.Navigation("ToStation");
-                });
-
             modelBuilder.Entity("SmartMetroService.Domain.Entities.Station", b =>
                 {
                     b.Navigation("FromDistances");
 
-                    b.Navigation("FromTickets");
-
                     b.Navigation("ToDistances");
-
-                    b.Navigation("ToTickets");
-                });
-
-            modelBuilder.Entity("SmartMetroService.Domain.Entities.Ticket", b =>
-                {
-                    b.Navigation("Journeys");
                 });
 #pragma warning restore 612, 618
         }

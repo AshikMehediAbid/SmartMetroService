@@ -8,6 +8,8 @@ public interface IUnitOfWork : IDisposable
     IUserOTPRepository UserOtpRepository { get; }
     ITokenRepository TokenRepository { get; }
     IAdminRepository AdminRepository { get; }
+    IWalletRepository WalletRepository { get; }
+    ITicketRepository TicketRepository { get; }
 
 
     Task<int> CompleteAsync();
