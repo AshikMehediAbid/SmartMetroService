@@ -31,7 +31,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ToStationName,
                 opt => opt.MapFrom(src => src.ToStation == null ? null : src.ToStation.StationName))
             .ForMember(dest => dest.ExpiredAt,
-                opt => opt.MapFrom(src => src.ExpiryTime));
+                opt => opt.MapFrom(src => src.ExpiryTime))
+            .ForMember(dest => dest.QrCode,
+                opt => opt.MapFrom(src => src.QRByte == null
+                                        ? null
+                                        : $"data:image/png;base64,{Convert.ToBase64String(src.QRByte)}")
+                );
     }
 
 }

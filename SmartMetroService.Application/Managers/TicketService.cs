@@ -14,7 +14,7 @@ public class TicketService : ITicketService
     private readonly IEncryptionService _encryptionService;
     private readonly IQrCodeService _qrCodeService;
 
-    public TicketService(IUnitOfWork unitOfWork, IMapper mapper, IEncryptionService encryptionService,IQrCodeService qrCodeService)
+    public TicketService(IUnitOfWork unitOfWork, IMapper mapper, IEncryptionService encryptionService, IQrCodeService qrCodeService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -26,7 +26,7 @@ public class TicketService : ITicketService
     {
         var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(request.UserEmail);
 
-        if(user is null)
+        if (user is null)
         {
             throw new Exception("User not found");
         }
@@ -59,19 +59,19 @@ public class TicketService : ITicketService
         return qrCode;
     }
 
-/*    public async Task<List<TicketResponseDto>?> GetTicketsOfAUserByTicketStatus(TicketRequestDto request)
-    {
-        var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(request.UserEmail);
+    /*    public async Task<List<TicketResponseDto>?> GetTicketsOfAUserByTicketStatus(TicketRequestDto request)
+        {
+            var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(request.UserEmail);
 
-        if (user is null)
-            throw new UnauthorizedException("User not found");
+            if (user is null)
+                throw new UnauthorizedException("User not found");
 
-        List<Ticket>? ticketsEntity = await _unitOfWork.TicketRepository.GetTicketsOfAUserByTicketStatusAsync(request);
+            List<Ticket>? ticketsEntity = await _unitOfWork.TicketRepository.GetTicketsOfAUserByTicketStatusAsync(request);
 
-        var tickets = _mapper.Map<List<TicketResponseDto>>(ticketsEntity);
+            var tickets = _mapper.Map<List<TicketResponseDto>>(ticketsEntity);
 
-        return tickets;
-    }*/
+            return tickets;
+        }*/
 
     public async Task<List<TicketResponseDto>?> GetTicketsOfAUserByTicketStatus(string? userEmail, TicketStatus ticketStatus)
     {
@@ -79,6 +79,9 @@ public class TicketService : ITicketService
 
         if (user is null)
             throw new UnauthorizedException("User not found");
+
+        await _unitOfWork.TicketRepository.MarkOldFreshTicketsAsExpiredAsync(user.Id);
+        await _unitOfWork.CompleteAsync();
 
         var tickets = await _unitOfWork.TicketRepository.GetTicketsOfAUserByTicketStatusAsync(user.Id, ticketStatus);
 

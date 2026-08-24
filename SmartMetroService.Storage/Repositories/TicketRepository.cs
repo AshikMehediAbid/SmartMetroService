@@ -15,7 +15,7 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
     public async Task<byte[]> GetQrByteByIdAsync(Guid id)
     {
         var qrByte = await _dbSet
-            .Where(t => id == id)
+            .Where(t => t.Id == id)
             .Select(t => t.QRByte)
             .FirstOrDefaultAsync();
 
@@ -43,4 +43,13 @@ public class TicketRepository : Repository<Ticket>, ITicketRepository
         return tickets;
     }
 
+    public async Task MarkOldFreshTicketsAsExpiredAsync(Guid id)
+    {
+        await _dbSet
+            .Where(t => t.UserId == id &&
+                        t.TicketStatus == TicketStatus.Fresh &&
+                        t.ExpiryTime < DateTime.UtcNow)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(t => t.TicketStatus, TicketStatus.Expired));
+    }
 }

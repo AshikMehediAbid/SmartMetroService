@@ -8,4 +8,5 @@ public interface ITicketRepository : IRepository<Ticket>
     Task<byte[]> GetQrByteByIdAsync(Guid id);
     Task<Ticket?> GetTicketByIdAsync(Guid id);
     Task<List<Ticket>?> GetTicketsOfAUserByTicketStatusAsync(Guid id, TicketStatus ticketStatus);
+    Task MarkOldFreshTicketsAsExpiredAsync(Guid id);
 }
