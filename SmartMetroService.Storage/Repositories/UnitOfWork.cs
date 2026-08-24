@@ -15,6 +15,7 @@ public class UnitOfWork : IUnitOfWork
     public ITokenRepository TokenRepository { get; }
     public IAdminRepository AdminRepository { get; }
     public IWalletRepository WalletRepository { get; }
+    public ITicketRepository TicketRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
         IAccountRepository accountRepo,
@@ -23,7 +24,8 @@ public class UnitOfWork : IUnitOfWork
         IStationDistanceRepository stationDistanceRepository,
         ITokenRepository tokenRepo,
         IAdminRepository adminRepo,
-        IWalletRepository walletRepo){
+        IWalletRepository walletRepo,
+        ITicketRepository ticketRepo){
         _db = db;
 
         AccountRepository = accountRepo;
@@ -33,6 +35,7 @@ public class UnitOfWork : IUnitOfWork
         TokenRepository = tokenRepo;
         AdminRepository = adminRepo;
         WalletRepository = walletRepo;
+        TicketRepository = ticketRepo;
 
     }
 

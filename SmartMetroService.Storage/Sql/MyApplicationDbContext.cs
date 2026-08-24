@@ -14,6 +14,8 @@ public class MyApplicationDbContext : DbContext
     public DbSet<StationDistance> StationDistances { get; set; }
     public DbSet<Settings> Settings { get; set; }
     public DbSet<UserWallet> UserWallets { get; set; }
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<Journey> Journeys { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,6 +31,85 @@ public class MyApplicationDbContext : DbContext
             .WithMany(s => s.ToDistances)
             .HasForeignKey(sd => sd.ToStationId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        ConfigureTicket(modelBuilder);
+        ConfigureJourney(modelBuilder);
+    }
+
+
+    private static void ConfigureTicket(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<Ticket>();
+
+        entity.HasKey(x => x.Id);
+
+        entity.Property(x => x.Fare)
+            .IsRequired();
+
+        entity.Property(x => x.TicketType)
+            .IsRequired();
+
+        entity.Property(x => x.TicketStatus)
+            .IsRequired();
+
+        entity.HasOne(x => x.FromStation)
+            .WithMany(x => x.FromTickets)
+            .HasForeignKey(x => x.FromStationId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        entity.HasOne(x => x.ToStation)
+            .WithMany(x => x.ToTickets)
+            .HasForeignKey(x => x.ToStationId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        entity.HasIndex(x => x.UserId);
+
+        entity.HasIndex(x => x.TicketStatus);
+
+        entity.HasIndex(x => x.ExpiryTime);
+    }
+
+
+    private static void ConfigureJourney(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<Journey>();
+
+        entity.HasKey(x => x.Id);
+
+        entity.Property(x => x.Fare)
+            .IsRequired();
+
+        entity.Property(x => x.StartAt)
+            .IsRequired();
+
+        entity.Property(x => x.JourneyStatus)
+            .IsRequired();
+
+        // Journey -> Ticket
+        entity.HasOne(x => x.Ticket)
+            .WithMany(x => x.Journeys)
+            .HasForeignKey(x => x.TicketId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Journey -> From Station
+        entity.HasOne(x => x.FromStation)
+            .WithMany()
+            .HasForeignKey(x => x.FromStationId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Journey -> To Station
+        entity.HasOne(x => x.ToStation)
+            .WithMany()
+            .HasForeignKey(x => x.ToStationId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        entity.HasIndex(x => x.UserId);
+
+        entity.HasIndex(x => x.TicketId);
+
+        entity.HasIndex(x => x.JourneyStatus);
+
+        entity.HasIndex(x => x.StartAt);
     }
 
 }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Interfaces.IRepositories;
 using SmartMetroService.Application.Managers;
 using SmartMetroService.Application.Mapping;
+using SmartMetroService.Application.Models;
 using SmartMetroService.Storage.Repositories;
 using SmartMetroService.Storage.Sql;
 using System.Text.Json.Serialization;
@@ -22,6 +24,10 @@ public static class DependencyConfig
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IWalletService, WalletService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ITicketService, TicketService>();
+        services.AddScoped<IEncryptionService, EncryptionService>();
+        services.AddScoped<IQrCodeService, QrCodeService>();
+        services.AddScoped<IPdfService, PdfService>();
 
 
         // Repository Registration
@@ -34,6 +40,7 @@ public static class DependencyConfig
         services.AddScoped<ITokenRepository, TokenRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
+        services.AddScoped<ITicketRepository, TicketRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
@@ -65,5 +72,12 @@ public static class DependencyConfig
                         .AllowCredentials();
                 });
         });
+
+
+        services.Configure<EncryptionSettings>(
+            configuration.GetSection("EncryptionKey"));
+
+        // QuestPDF license
+        QuestPDF.Settings.License = LicenseType.Community;
     }
 }

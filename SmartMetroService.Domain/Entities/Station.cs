@@ -16,4 +16,9 @@ public class Station : BaseEntity
     public ICollection<StationDistance> ToDistances { get; set; }
         = new List<StationDistance>();
 
+    public ICollection<Ticket> FromTickets { get; set; } = [];
+
+    public ICollection<Ticket> ToTickets { get; set; } = [];
+
+
 }

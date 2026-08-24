@@ -32,7 +32,7 @@ public class PaymentController : ControllerBase
 
             return Ok(new { message = "Payment successful" });
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             return BadRequest();
         }

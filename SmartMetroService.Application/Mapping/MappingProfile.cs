@@ -23,6 +23,15 @@ public class MappingProfile : Profile
                 opt => opt.MapFrom(dest => dest.Latitude))
             .ForMember(dest => dest.Long,
                 opt => opt.MapFrom(dest => dest.Longitude));
+
+
+        CreateMap<Ticket, TicketResponseDto>()
+            .ForMember(dest => dest.FromStationName,
+                opt => opt.MapFrom(src => src.FromStation == null ? null : src.FromStation.StationName))
+            .ForMember(dest => dest.ToStationName,
+                opt => opt.MapFrom(src => src.ToStation == null ? null : src.ToStation.StationName))
+            .ForMember(dest => dest.ExpiredAt,
+                opt => opt.MapFrom(src => src.ExpiryTime));
     }
 
 }
