@@ -89,4 +89,12 @@ public class TicketService : ITicketService
 
         return ticketDto;
     }
+
+    public async Task<Ticket> GetTicketByIdAsync(Guid ticketId)
+    {
+        var ticket = await _unitOfWork.TicketRepository.GetTicketByIdAsync(ticketId);
+
+        return ticket;
+
+    }
 }

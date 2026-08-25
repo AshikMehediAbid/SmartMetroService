@@ -1,4 +1,4 @@
-﻿namespace SmartMetroService.Application.Interfaces.IRepositories;
+﻿namespace SmartMetroService.Application.Interfaces.IManagers;
 
 public interface IQrCodeService
 {

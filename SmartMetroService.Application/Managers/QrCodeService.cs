@@ -1,5 +1,5 @@
 ﻿using QRCoder;
-using SmartMetroService.Application.Interfaces.IRepositories;
+using SmartMetroService.Application.Interfaces.IManagers;
 
 namespace SmartMetroService.Application.Managers;
 
