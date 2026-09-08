@@ -16,6 +16,7 @@ public class MyApplicationDbContext : DbContext
     public DbSet<UserWallet> UserWallets { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<Journey> Journeys { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -34,6 +35,7 @@ public class MyApplicationDbContext : DbContext
 
         ConfigureTicket(modelBuilder);
         ConfigureJourney(modelBuilder);
+        ConfigurePayment(modelBuilder);
     }
 
 
@@ -110,6 +112,18 @@ public class MyApplicationDbContext : DbContext
         entity.HasIndex(x => x.JourneyStatus);
 
         entity.HasIndex(x => x.StartAt);
+    }
+
+    private static void ConfigurePayment(ModelBuilder modelBuilder)
+    {
+        var entity = modelBuilder.Entity<Payment>();
+
+        entity.HasKey(x => x.Id);
+        entity.Property(x => x.MerTxnId).IsRequired();
+        entity.Property(x => x.Currency).IsRequired();
+        entity.Property(x => x.Status).IsRequired();
+        entity.HasIndex(x => x.MerTxnId).IsUnique();
+        entity.HasIndex(x => x.UserId);
     }
 
 }

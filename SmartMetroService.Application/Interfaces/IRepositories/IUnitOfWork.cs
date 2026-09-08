@@ -10,6 +10,7 @@ public interface IUnitOfWork : IDisposable
     IAdminRepository AdminRepository { get; }
     IWalletRepository WalletRepository { get; }
     ITicketRepository TicketRepository { get; }
+    IPaymentRepository PaymentRepository { get; }
 
 
     Task<int> CompleteAsync();

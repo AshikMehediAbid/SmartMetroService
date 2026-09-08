@@ -13,7 +13,7 @@ public class WalletRepository : Repository<UserWallet>, IWalletRepository
 
     public async Task<UserWallet?> GetWalletByUserIdAsync(Guid userId)
     {
-        var wallet = await _dbSet.FirstOrDefaultAsync(w => userId == userId);
+        var wallet = await _dbSet.FirstOrDefaultAsync(w => w.UserId == userId.ToString());
 
         return wallet;
     }
