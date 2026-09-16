@@ -29,6 +29,7 @@ public static class DependencyConfig
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPdfService, PdfService>();
         services.AddScoped<IScannerService, ScannerService>();
+        services.AddScoped<IAamarPayService, AamarPayService>();
 
 
         // Repository Registration
@@ -42,6 +43,8 @@ public static class DependencyConfig
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IRapidPassRepository, RapidPassRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
@@ -80,5 +83,8 @@ public static class DependencyConfig
 
         // QuestPDF license
         QuestPDF.Settings.License = LicenseType.Community;
+
+        // Register HttpClient
+        services.AddHttpClient();
     }
 }

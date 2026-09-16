@@ -28,6 +28,25 @@ public class WalletService : IWalletService
         await _unitOfWork.CompleteAsync();
     }
 
+    public async Task IncreaseAccountBalanceAsync(string email, decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+
+        var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(email)
+            ?? throw new UnauthorizedException("User Not found");
+        var wallet = await _unitOfWork.WalletRepository.GetWalletByUserIdAsync(user.Id);
+
+        if (wallet is null)
+        {
+            wallet = new UserWallet { UserId = user.Id.ToString(), Balance = 0 };
+            await _unitOfWork.WalletRepository.AddAsync(wallet);
+        }
+
+        wallet.Balance += (double)amount;
+        await _unitOfWork.CompleteAsync();
+    }
+
     public async Task<double> GetBalanceByEmailAsync(string email)
     {
         var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(email);
