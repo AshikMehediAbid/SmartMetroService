@@ -43,6 +43,7 @@ public static class DependencyConfig
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IRapidPassRepository, RapidPassRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

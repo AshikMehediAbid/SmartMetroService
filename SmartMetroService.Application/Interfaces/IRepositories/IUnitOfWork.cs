@@ -11,6 +11,7 @@ public interface IUnitOfWork : IDisposable
     IWalletRepository WalletRepository { get; }
     ITicketRepository TicketRepository { get; }
     IPaymentRepository PaymentRepository { get; }
+    IRapidPassRepository RapidPassRepository { get; }
 
 
     Task<int> CompleteAsync();

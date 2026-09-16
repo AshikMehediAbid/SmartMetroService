@@ -37,6 +37,13 @@ public class MappingProfile : Profile
                                         ? null
                                         : $"data:image/png;base64,{Convert.ToBase64String(src.QRByte)}")
                 );
+
+        CreateMap<RapidPass, RapidPassResponseDto>()
+            .ForMember(dest => dest.QrCode,
+                opt => opt.MapFrom(src => src.QRByte == null
+                                        ? null
+                                        : $"data:image/png;base64,{Convert.ToBase64String(src.QRByte)}")
+            );
     }
 
 }

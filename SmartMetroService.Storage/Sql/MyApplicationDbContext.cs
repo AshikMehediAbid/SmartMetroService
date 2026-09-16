@@ -17,6 +17,7 @@ public class MyApplicationDbContext : DbContext
     public DbSet<Ticket> Tickets { get; set; }
     public DbSet<Journey> Journeys { get; set; }
     public DbSet<Payment> Payments { get; set; }
+    public DbSet<RapidPass> RapidPasses { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
