@@ -45,6 +45,7 @@ public static class DependencyConfig
         services.AddScoped<ITicketRepository, TicketRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IRapidPassRepository, RapidPassRepository>();
+        services.AddScoped<IJourneyRepository, JourneyRepository>();
 
         // AutoMapper
         services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
@@ -62,6 +63,11 @@ public static class DependencyConfig
         services.AddDbContext<MyApplicationDbContext>(options =>
         options.UseSqlServer(connectionString)
         );
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+        });
 
         // Add CORS policy
         services.AddCors(options =>

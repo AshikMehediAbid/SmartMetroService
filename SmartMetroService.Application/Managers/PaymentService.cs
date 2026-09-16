@@ -114,7 +114,7 @@ public class PaymentService : IPaymentService
 
         if (payment.PaymentFor == (int)PaymentFor.WalletRecharge)
         {
-            await _walletService.IncreaseAccountBalanceAsync(payment.UserEmail, payment.Amount);
+            await _walletService.IncreaseWalletBalanceAsync(payment.UserEmail, payment.Amount);
         }
         else
         {
@@ -170,7 +170,7 @@ public class PaymentService : IPaymentService
 
     private async Task<int> HandleAccountPayment(PurchaseTicketRequestDto request, int fare)
     {
-        var userBalance = await _walletService.GetBalanceByEmailAsync(request.UserEmail);
+        var userBalance = await _walletService.GetWalletBalanceByEmailAsync(request.UserEmail);
 
         if (fare > userBalance)
         {
@@ -178,7 +178,7 @@ public class PaymentService : IPaymentService
         }
 
         // Reduce Account Balance
-        await _walletService.DecreaseAccountBalanceAsync(request.UserEmail, fare);
+        await _walletService.DecreaseWalletBalanceAsync(request.UserEmail, fare);
 
         return fare;
     }

@@ -4,7 +4,7 @@ public class Journey
 {
     public int Id { get; set; }
     public Guid UserId { get; set; }
-    public Guid TicketId { get; set; }
+    public Guid? RapidPassId { get; set; }
 
     public int FromStationId { get; set; }
     public int ToStationId { get; set; }
@@ -18,6 +18,7 @@ public class Journey
 
     // Navigation properties
     public Ticket? Ticket { get; set; }
+    public RapidPass? RapidPass { get; set; }
     public Station? FromStation { get; set; }
     public Station? ToStation { get; set; }
 

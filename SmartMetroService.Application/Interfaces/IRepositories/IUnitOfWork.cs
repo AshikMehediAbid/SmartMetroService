@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     ITicketRepository TicketRepository { get; }
     IPaymentRepository PaymentRepository { get; }
     IRapidPassRepository RapidPassRepository { get; }
+    IJourneyRepository JourneyRepository { get; }
 
 
     Task<int> CompleteAsync();

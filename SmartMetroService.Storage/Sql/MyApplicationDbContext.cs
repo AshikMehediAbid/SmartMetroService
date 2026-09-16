@@ -88,10 +88,9 @@ public class MyApplicationDbContext : DbContext
         entity.Property(x => x.JourneyStatus)
             .IsRequired();
 
-        // Journey -> Ticket
-        entity.HasOne(x => x.Ticket)
-            .WithMany(x => x.Journeys)
-            .HasForeignKey(x => x.TicketId)
+        entity.HasOne(x => x.RapidPass)
+            .WithMany()
+            .HasForeignKey(x => x.RapidPassId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Journey -> From Station
@@ -108,7 +107,7 @@ public class MyApplicationDbContext : DbContext
 
         entity.HasIndex(x => x.UserId);
 
-        entity.HasIndex(x => x.TicketId);
+        entity.HasIndex(x => x.RapidPassId);
 
         entity.HasIndex(x => x.JourneyStatus);
 
