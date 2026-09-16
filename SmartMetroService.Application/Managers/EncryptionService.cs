@@ -14,14 +14,14 @@ public class EncryptionService : IEncryptionService
     public EncryptionService(IOptions<EncryptionSettings> options)
     {
         _key = Encoding.UTF8.GetBytes(options.Value.Key);
-       // _iv = Encoding.UTF8.GetBytes(options.Value.IV);
+        _iv = Encoding.UTF8.GetBytes(options.Value.IV);
     }
     public string Decrypt(string cipherText)
     {
         using var aes = Aes.Create();
 
         aes.Key = _key;
-       // aes.IV = _iv;
+        aes.IV = _iv;
 
         using var decryptor = aes.CreateDecryptor();
 
@@ -44,7 +44,7 @@ public class EncryptionService : IEncryptionService
         using var aes = Aes.Create();
 
         aes.Key = _key;
-       // aes.IV = _iv;
+        aes.IV = _iv;
 
         using var encryptor = aes.CreateEncryptor();
 

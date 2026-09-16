@@ -87,6 +87,13 @@ public class TicketService : ITicketService
         return ticketDto;
     }
 
+    public async Task<Ticket> GetTicketByIdAsync(Guid ticketId)
+    {
+        var ticket = await _unitOfWork.TicketRepository.GetTicketByIdAsync(ticketId);
+
+        return ticket;
+    }
+
     public async Task<RapidPassResponseDto> GetOrCreateUserRapidPass(string? userEmail)
     {
         var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(userEmail);

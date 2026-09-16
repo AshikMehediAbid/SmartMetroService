@@ -28,6 +28,7 @@ public static class DependencyConfig
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IPdfService, PdfService>();
+        services.AddScoped<IScannerService, ScannerService>();
         services.AddScoped<IAamarPayService, AamarPayService>();
 
 
