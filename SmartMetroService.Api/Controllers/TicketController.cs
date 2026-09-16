@@ -19,28 +19,6 @@ public class TicketController : ControllerBase
         _ticketService = ticketService;
         _pdfService = pdfService;
     }
-/*
-    [HttpPost]
-    [Route("purchase")]
-    public async Task<IActionResult> GetTickets([FromBody] TicketRequestDto request)
-    {
-        try
-        {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            if (userEmail != request.UserEmail)
-            {
-                return Unauthorized(new { message = "Invalid User" });
-            }
-
-            List<TicketResponseDto>? tickets = await _ticketService.GetTicketsOfAUserByTicketStatus(request);
-
-            return Ok(tickets);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }*/
 
 
     [Authorize]
