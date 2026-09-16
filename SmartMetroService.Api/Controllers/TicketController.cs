@@ -54,6 +54,19 @@ public class TicketController : ControllerBase
     }
 
 
+
+    [Authorize]
+    [HttpGet]
+    [Route("rapidpass")]
+    public async Task<IActionResult> GetOrCreateUserRapidPass()
+    {
+        var userEmail = User.FindFirstValue(ClaimTypes.Email);
+        RapidPassResponseDto rapidPass = await _ticketService.GetOrCreateUserRapidPass(userEmail);
+        return Ok(rapidPass);
+    }
+
+
+
     [HttpGet("download-ticket/{id}")]
     public async Task<IActionResult> DownloadTicket(Guid id)
     {
