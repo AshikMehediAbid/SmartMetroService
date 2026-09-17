@@ -111,7 +111,7 @@ public class TicketService : ITicketService
             if (rapidPassTicket.ExpiryTime < DateTime.Now)
             {
                 rapidPassTicket.ExpiryTime = DateTime.Now.AddDays(1);
-
+                rapidPassTicket.UpdatedAt = DateTime.Now;
                 rapidPassTicket.QRByte = GenerateQrByte(rapidPassTicket.Id, rapidPassTicket.ExpiryTime.Value, "RapidPass");
 
                 await _unitOfWork.CompleteAsync();
@@ -138,5 +138,19 @@ public class TicketService : ITicketService
         var rapidPassTicketDto = _mapper.Map<RapidPassResponseDto>(rapidPassTicket);
 
         return rapidPassTicketDto;
+    }
+
+    public async Task<RapidPassResponseDto> RefreshRapidPass(string? userEmail)
+    {
+        var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(userEmail);
+        RapidPass? rapidPassTicket = await _unitOfWork.RapidPassRepository.GetByUserIdAsync(user.Id);
+
+        rapidPassTicket.ExpiryTime = DateTime.Now.AddDays(1);
+        rapidPassTicket.UpdatedAt = DateTime.Now;
+        rapidPassTicket.QRByte = GenerateQrByte(rapidPassTicket.Id, rapidPassTicket.ExpiryTime.Value, "RapidPass");
+        await _unitOfWork.CompleteAsync();
+
+        var rapidPassDto = _mapper.Map<RapidPassResponseDto>(rapidPassTicket);
+        return rapidPassDto;
     }
 }
