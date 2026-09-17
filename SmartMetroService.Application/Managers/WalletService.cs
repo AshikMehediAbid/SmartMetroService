@@ -14,7 +14,7 @@ public class WalletService : IWalletService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task DecreaseAccountBalanceAsync(string email, int fare)
+    public async Task DecreaseWalletBalanceAsync(string email, int fare)
     {
         var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(email);
 
@@ -28,7 +28,7 @@ public class WalletService : IWalletService
         await _unitOfWork.CompleteAsync();
     }
 
-    public async Task IncreaseAccountBalanceAsync(string email, decimal amount)
+    public async Task IncreaseWalletBalanceAsync(string email, decimal amount)
     {
         if (amount <= 0)
             throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
@@ -47,7 +47,7 @@ public class WalletService : IWalletService
         await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<double> GetBalanceByEmailAsync(string email)
+    public async Task<double> GetWalletBalanceByEmailAsync(string email)
     {
         var user = await _unitOfWork.AccountRepository.GetUserByEmailAsync(email);
 

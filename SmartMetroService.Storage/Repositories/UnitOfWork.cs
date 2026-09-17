@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
     public ITicketRepository TicketRepository { get; }
     public IPaymentRepository PaymentRepository { get; }
     public IRapidPassRepository RapidPassRepository { get; }
+    public IJourneyRepository JourneyRepository { get; }
 
     public UnitOfWork(MyApplicationDbContext db,
         IAccountRepository accountRepo,
@@ -29,7 +30,8 @@ public class UnitOfWork : IUnitOfWork
         IWalletRepository walletRepo,
         ITicketRepository ticketRepo,
         IPaymentRepository paymentRepo,
-        IRapidPassRepository rapidPassRepo){
+        IRapidPassRepository rapidPassRepo,
+        IJourneyRepository journeyRepo){
         _db = db;
 
         AccountRepository = accountRepo;
@@ -42,6 +44,7 @@ public class UnitOfWork : IUnitOfWork
         TicketRepository = ticketRepo;
         PaymentRepository = paymentRepo;
         RapidPassRepository = rapidPassRepo;
+        JourneyRepository = journeyRepo;
 
     }
 

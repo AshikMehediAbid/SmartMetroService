@@ -2,7 +2,7 @@
 
 public interface IWalletService
 {
-    Task DecreaseAccountBalanceAsync(string userEmail, int fare);
-    Task IncreaseAccountBalanceAsync(string userEmail, decimal amount);
-    Task<double> GetBalanceByEmailAsync(string email);
+    Task DecreaseWalletBalanceAsync(string userEmail, int fare);
+    Task IncreaseWalletBalanceAsync(string userEmail, decimal amount);
+    Task<double> GetWalletBalanceByEmailAsync(string email);
 }

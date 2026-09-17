@@ -55,7 +55,7 @@ public class TicketService : ITicketService
     {
         var payload = new QrPayload
         {
-            Id = id,
+            TicketId = id.ToString(),
             ExpiryTime = expiryTime,
             QrType = qrType
         };

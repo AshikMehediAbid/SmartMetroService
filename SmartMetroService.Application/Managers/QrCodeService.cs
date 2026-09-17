@@ -11,6 +11,6 @@ public class QrCodeService : IQrCodeService
         using var qrCodeData = qrGenerator.CreateQrCode(text, QRCodeGenerator.ECCLevel.Q);
 
         using var qrCode = new PngByteQRCode(qrCodeData);
-        return qrCode.GetGraphic(10);
+        return qrCode.GetGraphic(50);
     }
 }

@@ -26,7 +26,7 @@ public class WalletController : ControllerBase
         {
             var email = User.FindFirst("email")?.Value ?? User.FindFirstValue(ClaimTypes.Email);
 
-            var balance = await _walletService.GetBalanceByEmailAsync(email);
+            var balance = await _walletService.GetWalletBalanceByEmailAsync(email);
             return Ok(balance);
         }
         catch(UnauthorizedException ex)

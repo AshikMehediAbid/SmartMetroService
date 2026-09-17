@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartMetroService.Application.Interfaces.IManagers;
 using SmartMetroService.Application.Models;
+using System.Security.Claims;
 
 namespace SmartMetroService.Api.Controllers;
 
