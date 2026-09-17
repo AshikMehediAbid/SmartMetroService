@@ -57,6 +57,26 @@ public class StationService : IStationService
         }
     }
 
+    public async Task<bool> DeleteStationAsync(int stationId)
+    {
+        var station = await _unitOfWork.StationRepository.GetStationByIdAsync(stationId);
+
+        if (station is null)
+            return false;
+
+        var stations = await _unitOfWork.StationRepository.GetAllAsync();
+        foreach (var remainingStation in stations.Where(s => s.StationOrder > station.StationOrder))
+        {
+            remainingStation.StationOrder--;
+        }
+
+        await _unitOfWork.StationDistanceRepository.DeleteByStationIdAsync(stationId);
+        await _unitOfWork.StationRepository.DeleteAsync(station);
+        await _unitOfWork.CompleteAsync();
+
+        return true;
+    }
+
     public async Task<List<StationDetailsDto>?> GetAllStationAsync(int orderBy)
     {
         var stationEntity = await _unitOfWork.StationRepository.GetAllStationOrderBy(orderBy);

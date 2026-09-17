@@ -23,6 +23,15 @@ public class StationDistanceRepository : Repository<StationDistance>, IStationDi
         await _dbSet.AddAsync(stationDistanceEntity);
     }
 
+    public async Task DeleteByStationIdAsync(int stationId)
+    {
+        var stationDistances = await _dbSet
+            .Where(sd => sd.FromStationId == stationId || sd.ToStationId == stationId)
+            .ToListAsync();
+
+        _dbSet.RemoveRange(stationDistances);
+    }
+
     public async Task<double?> GetDistanceByConsicutiveStationAsync(int stationId1, int stationId2)
     {
         var distance = await _dbSet

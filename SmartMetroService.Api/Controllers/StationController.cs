@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SmartMetroService.Api.Models;
 using SmartMetroService.Application.Exceptions;
 using SmartMetroService.Application.Interfaces.IManagers;
@@ -78,6 +79,43 @@ public class StationController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpDelete]
+    [Route("{stationId:int}")]
+    public async Task<IActionResult> DeleteStation(int stationId)
+    {
+        try
+        {
+            var isDeleted = await _stationService.DeleteStationAsync(stationId);
+
+            if (!isDeleted)
+            {
+                return NotFound(new ApiResponse<object>()
+                {
+                    Message = "Station not found"
+                });
+            }
+
+            return Ok(new ApiResponse<object>()
+            {
+                Message = "Station deleted successfully"
+            });
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new ApiResponse<object>()
+            {
+                Message = "Station cannot be deleted because it is already referenced"
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
         }
     }
 
