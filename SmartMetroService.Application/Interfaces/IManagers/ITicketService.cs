@@ -9,4 +9,5 @@ public interface ITicketService
     Task<RapidPassResponseDto> GetOrCreateUserRapidPass(string? userEmail);
     Task<List<TicketResponseDto>?> GetTicketsOfAUserByTicketStatus(string? userEmail, TicketStatus ticketStatus);
     Task<Ticket> GetTicketByIdAsync(Guid ticketId);
+    Task<RapidPassResponseDto> RefreshRapidPass(string? userEmail);
 }
