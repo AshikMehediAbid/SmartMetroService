@@ -44,6 +44,13 @@ public class StationRepository : Repository<Station>, IStationRepository
         return isExist;
     }
 
+    public async Task<bool> StationAlreadyExistsByNameAsync(string stationName, int excludedStationId)
+    {
+        return await _dbSet.AnyAsync(s =>
+            s.StationId != excludedStationId &&
+            s.StationName == stationName);
+    }
+
     public async Task UpdateStationsOrderAsync(int startFrom)
     {
         var x = await _dbSet

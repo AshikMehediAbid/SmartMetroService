@@ -8,5 +8,6 @@ public interface IStationRepository : IRepository<Station>
     Task<Station?> GetStationByIdAsync(int stationId);
     Task<Station?> GetStationByOrderAsync(int order);
     Task<bool> StationAlreadyExistsByNameAsync(string stationName);
+    Task<bool> StationAlreadyExistsByNameAsync(string stationName, int excludedStationId);
     Task UpdateStationsOrderAsync(int startFrom);
 }

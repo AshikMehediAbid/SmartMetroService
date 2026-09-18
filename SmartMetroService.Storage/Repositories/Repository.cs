@@ -29,7 +29,8 @@ public class Repository<T> : IRepository<T> where T : class
 
     public Task DeleteAsync(T entity)
     {
-        throw new NotImplementedException();
+        _dbSet.Remove(entity);
+        return Task.CompletedTask;
     }
 
     public async Task<List<T>> GetAllAsync()
