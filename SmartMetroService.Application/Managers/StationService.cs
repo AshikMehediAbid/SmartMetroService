@@ -57,6 +57,122 @@ public class StationService : IStationService
         }
     }
 
+    public async Task<StationResponseDto?> UpdateStationAsync(StationUpdateDto stationUpdateDto)
+    {
+        var station = await _unitOfWork.StationRepository.GetStationByIdAsync(stationUpdateDto.StationId);
+        if (station is null)
+            return null;
+
+        await ValidateStationUpdateAsync(stationUpdateDto);
+
+        var stations = await GetStationsInNewOrderAsync(station, stationUpdateDto.InsertAfter);
+
+        // Update the station's editable fields and assign the new order to every station.
+        _mapper.Map(stationUpdateDto, station);
+        SetStationOrder(stations);
+
+        // Replace the two links connected to this station with the submitted distances.
+        await ReplaceStationDistancesAsync(station, stations, stationUpdateDto);
+
+        await _unitOfWork.CompleteAsync();
+
+        return await BuildStationResponseAsync(station);
+    }
+
+    private async Task<StationResponseDto> BuildStationResponseAsync(Station station)
+    {
+        var response = _mapper.Map<StationResponseDto>(station);
+        var stationIndex = station.StationOrder - 1;
+        var stations = (await _unitOfWork.StationRepository.GetAllAsync())
+            .OrderBy(currentStation => currentStation.StationOrder)
+            .ToList();
+
+        if (stationIndex > 0)
+        {
+            response.DistanceFromPreviousStation = await _unitOfWork.StationDistanceRepository
+                .GetDistanceByConsicutiveStationAsync(
+                    stations[stationIndex - 1].StationId,
+                    station.StationId) ?? 0;
+        }
+
+        if (stationIndex < stations.Count - 1)
+        {
+            response.DistanceFromNextStation = await _unitOfWork.StationDistanceRepository
+                .GetDistanceByConsicutiveStationAsync(
+                    station.StationId,
+                    stations[stationIndex + 1].StationId) ?? 0;
+        }
+
+        return response;
+    }
+
+    private async Task ValidateStationUpdateAsync(StationUpdateDto stationUpdateDto)
+    {
+        if (await _unitOfWork.StationRepository.StationAlreadyExistsByNameAsync(
+                stationUpdateDto.StationName,
+                stationUpdateDto.StationId))
+        {
+            throw new AlreadyExistsException("Station Already Exist");
+        }
+    }
+
+    private async Task<List<Station>> GetStationsInNewOrderAsync(Station station, int insertAfter)
+    {
+        var allStations = await _unitOfWork.StationRepository.GetAllAsync();
+
+        var stations = allStations
+            .Where(currentStation => currentStation.StationId != station.StationId)
+            .OrderBy(currentStation => currentStation.StationOrder)
+            .ToList();
+
+        if (insertAfter < 0 || insertAfter > stations.Count)
+            throw new ArgumentOutOfRangeException(nameof(insertAfter));
+
+        // Remove the station from its old position, then insert it after the requested number of stations.
+        stations.Insert(insertAfter, station);
+        return stations;
+    }
+
+    private static void SetStationOrder(List<Station> stations)
+    {
+        for (var index = 0; index < stations.Count; index++)
+        {
+            stations[index].StationOrder = index + 1;
+        }
+    }
+
+    private async Task ReplaceStationDistancesAsync(
+        Station station,
+        List<Station> stations,
+        StationUpdateDto stationUpdateDto)
+    {
+        await _unitOfWork.StationDistanceRepository.DeleteByStationIdAsync(station.StationId);
+
+        var stationIndex = stations.FindIndex(s => s.StationId == station.StationId);
+        var previousStation = stationIndex > 0 ? stations[stationIndex - 1] : null;
+        var nextStation = stationIndex < stations.Count - 1 ? stations[stationIndex + 1] : null;
+
+        if (previousStation is not null)
+        {
+            await _unitOfWork.StationDistanceRepository.AddStationDistanceAsync(new StationDistance
+            {
+                FromStationId = previousStation.StationId,
+                ToStationId = station.StationId,
+                Distance = stationUpdateDto.DistanceFromPreviousStation
+            });
+        }
+
+        if (nextStation is not null)
+        {
+            await _unitOfWork.StationDistanceRepository.AddStationDistanceAsync(new StationDistance
+            {
+                FromStationId = station.StationId,
+                ToStationId = nextStation.StationId,
+                Distance = stationUpdateDto.DistanceFromNextStation
+            });
+        }
+    }
+
     public async Task<bool> DeleteStationAsync(int stationId)
     {
         var station = await _unitOfWork.StationRepository.GetStationByIdAsync(stationId);
@@ -77,11 +193,16 @@ public class StationService : IStationService
         return true;
     }
 
-    public async Task<List<StationDetailsDto>?> GetAllStationAsync(int orderBy)
+    public async Task<List<StationResponseDto>?> GetAllStationAsync(int orderBy)
     {
         var stationEntity = await _unitOfWork.StationRepository.GetAllStationOrderBy(orderBy);
+        var stations = new List<StationResponseDto>();
 
-        var stations = _mapper.Map<List<StationDetailsDto>>(stationEntity);
+        foreach (var station in stationEntity)
+        {
+            // Add the distances for the two links surrounding this station.
+            stations.Add(await BuildStationResponseAsync(station));
+        }
 
         return stations;
 

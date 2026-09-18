@@ -6,5 +6,4 @@ public class StationCreationDto : StationInfoDto
     public double DistanceFromPreviousStation { get; set; } = 0.0;
     public double DistanceFromNextStation { get; set; } = 0.0;
 
-
 }

@@ -24,6 +24,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Long,
                 opt => opt.MapFrom(dest => dest.Longitude));
 
+        CreateMap<Station, StationResponseDto>()
+            .ForMember(dest => dest.Lat,
+                opt => opt.MapFrom(src => src.Latitude))
+            .ForMember(dest => dest.Long,
+                opt => opt.MapFrom(src => src.Longitude));
+
 
         CreateMap<Ticket, TicketResponseDto>()
             .ForMember(dest => dest.FromStationName,

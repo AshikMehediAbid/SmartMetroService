@@ -119,6 +119,57 @@ public class StationController : ControllerBase
         }
     }
 
+    [HttpPut]
+    [Route("{stationId:int}")]
+    public async Task<IActionResult> UpdateStation(int stationId, [FromBody] StationUpdateDto stationUpdate)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = "One or more fields are invalid."
+            });
+        }
+
+        stationUpdate.StationId = stationId;
+
+        try
+        {
+            var updatedStation = await _stationService.UpdateStationAsync(stationUpdate);
+
+            if (updatedStation is null)
+            {
+                return NotFound(new ApiResponse<object>()
+                {
+                    Message = "Station not found"
+                });
+            }
+
+            return Ok(updatedStation);
+        }
+        catch (AlreadyExistsException)
+        {
+            return Conflict(new ApiResponse<object>()
+            {
+                Message = $"{stationUpdate.StationName} Already exist"
+            });
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = "InsertAfter must identify a valid position"
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object>()
+            {
+                Message = ex.Message
+            });
+        }
+    }
+
     [HttpGet]
     [Route("fare")]
     public async Task<IActionResult> StationFare(int fromStationId, int toStationId = 0)
