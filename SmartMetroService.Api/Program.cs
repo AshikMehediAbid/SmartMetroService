@@ -1,4 +1,5 @@
 using SmartMetroService.Api.Configurations;
+using SmartMetroService.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowNgFrontend");
 app.UseAuthentication();

@@ -3,4 +3,5 @@
   <Project Path="SmartMetroService.Application/SmartMetroService.Application.csproj" />
   <Project Path="SmartMetroService.Domain/SmartMetroService.Domain.csproj" />
   <Project Path="SmartMetroService.Storage/SmartMetroService.Storage.csproj" />
+  <Project Path="SmartMetroService.Tests/SmartMetroService.Tests.csproj" />
 </Solution>
