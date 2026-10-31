@@ -1,0 +1,7 @@
+type: directory-index
+title: Business domain context
+description: Cross-feature metro ticketing concepts and verified invariants.
+tags: [business, domain]
+spec_version: 1
+last_review: 2026-10-01
+resources: [domain-overview.md]

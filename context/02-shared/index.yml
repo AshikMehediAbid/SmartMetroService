@@ -1,0 +1,7 @@
+type: directory-index
+title: Shared engineering context
+description: Stack, conventions, test gates, and domain terms shared across features.
+tags: [engineering, conventions]
+spec_version: 1
+last_review: 2026-10-01
+resources: [tech-stack.md, engineering-conventions.md, testing.md, glossary.md]
