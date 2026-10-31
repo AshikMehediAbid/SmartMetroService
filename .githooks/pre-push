@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+#
+# Pre-push gate — runs the local CI gate before a push leaves your
+# machine. Installed via `make install-hooks` (or
+# `git config core.hooksPath .githooks` where make is not installed).
+#
+# First, every pushed branch must test-merge cleanly into a freshly
+# fetched origin/master (the merge check below); a conflict stops the push.
+#
+# Then the CI gate:
+#   * docs-only push (all changed files are *.md) → skipped.
+#   * anything else → scripts/ci.sh (build both projects, run the tests
+#     against SMARTMETRO_TEST_DB; AGENTS.md §2a and §7).
+#
+# This is a convenience gate, not hard enforcement: it is bypassable with
+# `git push --no-verify`, and only runs on machines that installed it.
+# True enforcement needs required status checks on the server. Agents
+# never bypass it without the user's explicit approval for that push
+# (AGENTS.md §4), so the failure messages below don't advertise the
+# bypasses.
+#
+# Tunables (env):
+#   SMARTMETRO_TEST_DB          throwaway test database (required for code pushes)
+#   PREPUSH_SKIP=1              skip the CI gate for this push (the merge check still runs)
+#   PREPUSH_SKIP_MERGE_CHECK=1  skip the test-merge against origin/master
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+base_branch="master"
+z40="0000000000000000000000000000000000000000"
+
+# git feeds the hook one line per ref on stdin:
+#   <local ref> <local sha> <remote ref> <remote sha>
+# Read it once: the merge check and the CI gate both walk it.
+refs="$(cat)"
+
+# ── Merge check ──────────────────────────────────────────────────────
+# Every pushed branch must test-merge cleanly into a freshly fetched
+# origin/master. GitHub's `mergeable` is computed lazily and can lag
+# behind master, and `git diff origin/master...HEAD` (a merge-base diff)
+# never tests mergeability. Two branches that each add a migration
+# conflict here, in the model snapshot. Runs before the docs-only exit:
+# a docs-only push can conflict too.
+if [ "${PREPUSH_SKIP_MERGE_CHECK:-0}" = "1" ]; then
+  echo "pre-push: merge check skipped (PREPUSH_SKIP_MERGE_CHECK=1)"
+else
+  if ! git fetch -q origin "$base_branch"; then
+    echo "pre-push: could not fetch origin $base_branch, so the merge check cannot run." >&2
+    echo "          retry the push." >&2
+    exit 1
+  fi
+
+  # git >= 2.38 has `merge-tree --write-tree` (exit 1 = conflicts). Older
+  # git falls back to the merge-base form, which only sees content
+  # conflicts (no rename or delete/modify ones).
+  git_ver="$(git version | sed -E 's/^git version ([0-9]+)\.([0-9]+).*/\1 \2/')"
+  read -r git_major git_minor <<< "$git_ver"
+  write_tree=0
+  if [ "$git_major" -gt 2 ] || { [ "$git_major" -eq 2 ] && [ "$git_minor" -ge 38 ]; }; then
+    write_tree=1
+  fi
+
+  conflicted=0
+  while read -r local_ref local_sha remote_ref remote_sha; do
+    # Blank input, branch deletion, or a tag — nothing to merge.
+    [ -n "$local_sha" ] || continue
+    [ "$local_sha" = "$z40" ] && continue
+    case "$remote_ref" in refs/heads/*) ;; *) continue ;; esac
+
+    if [ "$write_tree" = 1 ]; then
+      rc=0
+      out="$(git merge-tree --write-tree --name-only --no-messages "origin/$base_branch" "$local_sha" 2>&1)" || rc=$?
+      case "$rc" in
+        0) continue ;;
+        1) paths="$(printf '%s\n' "$out" | sed '1d; /^$/d' | sort -u)" ;;
+        *)
+          echo "pre-push: merge check failed for $local_ref:" >&2
+          printf '%s\n' "$out" >&2
+          exit 1
+          ;;
+      esac
+    else
+      base="$(git merge-base "$local_sha" "origin/$base_branch" 2>/dev/null || true)"
+      if [ -z "$base" ]; then
+        echo "pre-push: $local_ref shares no history with origin/$base_branch." >&2
+        exit 1
+      fi
+      # Conflict markers show up as added lines ("+<<<<<<< .our") under
+      # the "  our <mode> <sha> <path>" line of their file.
+      paths="$(git merge-tree "$base" "$local_sha" "origin/$base_branch" | awk '
+        /^  (base|our|their) +[0-7]+ [0-9a-f]+ / { sub(/^  (base|our|their) +[0-7]+ [0-9a-f]+ /, ""); p = $0; next }
+        /^\+<<<<<<< \.our/ { print p }' | sort -u)"
+      [ -z "$paths" ] && continue
+    fi
+
+    conflicted=1
+    echo "pre-push: $local_ref ($(git rev-parse --short "$local_sha")) does not merge cleanly into origin/$base_branch ($(git rev-parse --short "origin/$base_branch")). Conflicting paths:" >&2
+    printf '%s\n' "$paths" | sed 's/^/  /' >&2
+  done <<< "$refs"
+
+  if [ "$conflicted" = 1 ]; then
+    cat >&2 <<'MSG'
+pre-push: merge origin/master into the branch before pushing:
+            git merge origin/master   # keep both sides where both appended tests;
+                                      # if both added a migration, regenerate yours on top
+            bash scripts/ci.sh        # the gate must pass on the merge result
+          then push the merge commit.
+MSG
+    exit 1
+  fi
+  echo "pre-push: merge check passed (clean test-merge with origin/$base_branch $(git rev-parse --short "origin/$base_branch"))."
+fi
+
+if [ "${PREPUSH_SKIP:-0}" = "1" ]; then
+  echo "pre-push: CI gate skipped (PREPUSH_SKIP=1)"
+  exit 0
+fi
+
+# ── CI gate ──────────────────────────────────────────────────────────
+changed=""
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -n "$local_sha" ] || continue
+  # Branch deletion — nothing to check.
+  [ "$local_sha" = "$z40" ] && continue
+
+  if [ "$remote_sha" = "$z40" ]; then
+    # New branch on the remote: diff against origin/master (or the merge-base
+    # if we have it), so we only check what this branch adds.
+    base="$(git merge-base "$local_sha" "origin/$base_branch" 2>/dev/null || echo "")"
+    range="${base:+$base..}$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  # --no-renames lists both sides of a rename, so X.cs -> docs/X.md still counts as code.
+  files="$(git diff --name-only --no-renames "$range" 2>/dev/null || true)"
+  changed="$changed
+$files"
+done <<< "$refs"
+
+# Dedupe, drop blanks.
+changed="$(printf '%s\n' "$changed" | sed '/^$/d' | sort -u)"
+
+if [ -z "$changed" ]; then
+  echo "pre-push: no changed files detected — nothing to check."
+  exit 0
+fi
+
+# Non-markdown files only (docs-only pushes skip the gate).
+non_md="$(printf '%s\n' "$changed" | grep -vE '\.md$' || true)"
+if [ -z "$non_md" ]; then
+  echo "pre-push: docs-only change — skipping the CI gate."
+  exit 0
+fi
+
+echo "pre-push: local CI gate (scripts/ci.sh)"
+bash scripts/ci.sh
+
+echo "✅ pre-push gate passed."
