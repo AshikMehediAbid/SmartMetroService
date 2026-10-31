@@ -1,0 +1,7 @@
+type: directory-index
+title: Product source context
+description: Product intent, scope, and constraints for SmartMetroService.
+tags: [product, scope]
+spec_version: 1
+last_review: 2026-10-01
+resources: [vision.md, scope-and-requirements.md, constraints.md]

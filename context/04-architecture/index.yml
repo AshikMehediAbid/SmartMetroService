@@ -1,0 +1,7 @@
+type: directory-index
+title: Architecture context
+description: Current component boundaries and persistence model.
+tags: [architecture, data]
+spec_version: 1
+last_review: 2026-10-01
+resources: [architecture.md, data-model.md]

@@ -1,0 +1,18 @@
+type: directory-index
+title: SmartMetroService context
+description: Spec-led AIDLC context for understanding, rebuilding, and extending the SmartMetroService metro ticketing API.
+tags: [smart-metro, dotnet, api, aidlc]
+spec_version: 1
+last_review: 2026-10-01
+resources:
+  - architecture-map.md
+  - agent-rules.md
+  - WORKFLOW.md
+  - 01-source/
+  - 02-shared/
+  - 03-business/
+  - 04-architecture/
+  - 05-features/INDEX.yml
+  - 06-phase/
+  - 08-c4-diagram/
+  - 13-operations/

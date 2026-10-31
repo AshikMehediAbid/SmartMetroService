@@ -1,0 +1,37 @@
+type: feature-index
+title: Feature contracts
+description: Index of feature business, technical, and test contracts for the existing service.
+tags: [features, contracts]
+spec_version: 1
+last_review: 2026-10-01
+features:
+  - id: account-access
+    title: Account access and profile
+    status: implemented
+    contract_version: 1
+    depends_on: []
+  - id: stations-and-fares
+    title: Stations and fares
+    status: implemented
+    contract_version: 1
+    depends_on: []
+  - id: ticketing-and-rapidpass
+    title: Ticketing and RapidPass
+    status: implemented
+    contract_version: 1
+    depends_on: [account-access, stations-and-fares]
+  - id: payments-and-wallet
+    title: Payments and wallet
+    status: implemented
+    contract_version: 1
+    depends_on: [account-access, stations-and-fares, ticketing-and-rapidpass]
+  - id: gate-validation
+    title: Gate QR validation and journeys
+    status: implemented
+    contract_version: 1
+    depends_on: [stations-and-fares, ticketing-and-rapidpass]
+  - id: admin-settings
+    title: Admin settings
+    status: implemented
+    contract_version: 1
+    depends_on: [account-access, stations-and-fares]
