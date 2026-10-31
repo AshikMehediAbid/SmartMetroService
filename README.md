@@ -112,11 +112,14 @@ Authorization: `Bearer <token>`
 See `SmartMetroService.Api/SmartMetroService.Api.http` and `SmartMetroService.Tests/AuthFlowTests.cs` for concrete request/response sequences used in tests.
 
 ## Running tests
-From the repository root:
+The tests **delete the database they connect to**, and by default they connect to the one in your user secrets. Run
+them only through the gate script, against a throwaway database whose name contains `test`:
 ```bash
-dotnet test
+export SMARTMETRO_TEST_DB='Server=(localdb)\MSSQLLocalDB;Database=SmartMetro_Test;Trusted_Connection=True;TrustServerCertificate=True'
+bash scripts/ci.sh
 ```
-The `SmartMetroService.Tests` project contains an `AuthFlowTests.cs` that exercises account register/login/logout flows.
+The `SmartMetroService.Tests` project (not part of `SmartMetroService.slnx`) contains `AuthFlowTests.cs`, which
+exercises account register/login/logout flows. See `AGENTS.md` §2a.
 
 ## Development notes & conventions
 - Projects use a layered architecture: Api → Application → Domain → Storage.
@@ -130,13 +133,10 @@ The `SmartMetroService.Tests` project contains an `AuthFlowTests.cs` that exerci
 - For Swagger/OpenAPI issues, check that OpenAPI is enabled in Program.cs and that development settings allow the UI.
 
 ## Contributing
-Contributions are welcome. For code changes:
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Run tests and ensure they pass: `dotnet test`
-4. Open a pull request describing the change
-
-Please follow existing code style and add tests for new behavior.
+Every change, by a person or a coding agent, follows [`AGENTS.md`](AGENTS.md): a GitHub issue first, a branch
+`<type>/<issue>-<slug>` in a git worktree, the local gate `bash scripts/ci.sh`, and a pull request to `master` that
+says `Closes #<issue>`. The procedures (create an issue, implement it, review a PR) live in
+[`harness/`](harness/README.md); the hard rules are in [`golden-principles.md`](golden-principles.md).
 
 ## License
 Add a LICENSE file to explicitly choose a license (MIT, Apache-2.0, etc.). If you want a recommendation, MIT is a common permissive choice.
