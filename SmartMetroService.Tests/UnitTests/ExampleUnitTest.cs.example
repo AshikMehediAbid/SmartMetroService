@@ -1,0 +1,114 @@
+// EXAMPLE UNIT TEST TEMPLATE
+// Rename this file and modify as needed for actual unit tests
+// This shows the pattern for pure logic testing with no external dependencies
+
+using Xunit;
+using SmartMetroService.Application.Interfaces.IManagers;
+using SmartMetroService.Application.Managers;
+using Moq;
+
+namespace SmartMetroService.Tests.UnitTests.Domain;
+
+public class FareCalculationTests
+{
+    [Fact]
+    public void GetFare_WithValidStations_CalculatesCorrectAmount()
+    {
+        // Arrange
+        var stationA = 1;
+        var stationB = 5;
+        var expectedFare = 50; // Example: 50 BDT for stations 1-5
+
+        // Act
+        var fare = CalculateFare(stationA, stationB);
+
+        // Assert
+        Assert.Equal(expectedFare, fare);
+    }
+
+    [Fact]
+    public void GetFare_WithSameStation_ReturnsZero()
+    {
+        // Arrange
+        var station = 3;
+
+        // Act
+        var fare = CalculateFare(station, station);
+
+        // Assert
+        Assert.Equal(0, fare);
+    }
+
+    [Fact]
+    public void GetFare_WithInvalidStations_ThrowsException()
+    {
+        // Arrange
+        var invalidStation = -1;
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => CalculateFare(invalidStation, 5));
+    }
+
+    // Helper method - replace with actual fare calculation
+    private decimal CalculateFare(int startStation, int endStation)
+    {
+        // TODO: Replace with actual implementation from StationService
+        if (startStation < 0 || endStation < 0)
+            throw new ArgumentException("Invalid station");
+
+        if (startStation == endStation)
+            return 0;
+
+        return Math.Abs(endStation - startStation) * 10m;
+    }
+}
+
+public class TicketStateTransitionTests
+{
+    [Theory]
+    [InlineData("Fresh", "InUse", true)]
+    [InlineData("InUse", "Used", true)]
+    [InlineData("Used", "Fresh", false)]
+    [InlineData("Expired", "InUse", false)]
+    public void TransitionTicketState_WithValidTransitions_Succeeds(
+        string currentState, string nextState, bool shouldSucceed)
+    {
+        // Arrange
+        var ticket = new MockTicket { Status = currentState };
+
+        // Act
+        var result = ticket.TransitionTo(nextState);
+
+        // Assert
+        if (shouldSucceed)
+            Assert.True(result);
+        else
+            Assert.False(result);
+    }
+
+    private class MockTicket
+    {
+        public string Status { get; set; }
+
+        public bool TransitionTo(string nextStatus)
+        {
+            // Valid state transitions
+            var validTransitions = new Dictionary<string, string[]>
+            {
+                { "Fresh", new[] { "InUse", "Expired" } },
+                { "InUse", new[] { "Used", "Expired" } },
+                { "Used", Array.Empty<string>() },
+                { "Expired", Array.Empty<string>() }
+            };
+
+            if (!validTransitions.TryGetValue(Status, out var allowedNext))
+                return false;
+
+            if (!allowedNext.Contains(nextStatus))
+                return false;
+
+            Status = nextStatus;
+            return true;
+        }
+    }
+}
