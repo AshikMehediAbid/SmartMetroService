@@ -54,7 +54,7 @@ How the HTTP surface works today, and the rules for new or changed routes. Shape
 | `POST api/payment/success|fail|cancel` | anonymous (AamarPay) | form field `mer_txnid`; redirect |
 | `GET api/payment/status/{merTxnId}` | `[Authorize]` | not scoped to the caller (G5) |
 | `POST api/scanner/qr-data` | anonymous | Q1, G4 |
-| `POST api/station/create`, `PUT/DELETE api/station/{stationId}` | anonymous | should be `Admin` (G4) |
+| `POST api/station/create`, `PUT/DELETE api/station/{stationId}` | `Admin` | |
 | `GET api/station/{orderByHints}` | anonymous | 1 = ascending, 0 = descending |
 | `GET api/station/fare?fromStationId&toStationId` | anonymous | omit `toStationId` for fares to every station |
 | `GET api/tickets?ticketStatus`, `GET/PUT api/tickets/rapidpass` | `[Authorize]` | scoped to the caller |

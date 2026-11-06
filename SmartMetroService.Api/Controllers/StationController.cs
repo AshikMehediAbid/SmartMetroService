@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartMetroService.Api.Models;
 using SmartMetroService.Application.Exceptions;
@@ -20,6 +21,7 @@ public class StationController : ControllerBase
 
     [HttpPost]
     [Route("create")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateNewStation([FromBody] StationCreationDto newStation)
     {
         if (!ModelState.IsValid)
@@ -84,6 +86,7 @@ public class StationController : ControllerBase
 
     [HttpDelete]
     [Route("{stationId:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteStation(int stationId)
     {
         try
@@ -121,6 +124,7 @@ public class StationController : ControllerBase
 
     [HttpPut]
     [Route("{stationId:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateStation(int stationId, [FromBody] StationUpdateDto stationUpdate)
     {
         if (!ModelState.IsValid)
