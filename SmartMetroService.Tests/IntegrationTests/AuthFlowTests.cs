@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SmartMetroService.Storage.Sql;
 using Xunit;
 
-namespace SmartMetroService.Tests;
+namespace SmartMetroService.Tests.IntegrationTests;
 
 public class AuthFlowTests : IClassFixture<WebApplicationFactory<Program>>
 {
